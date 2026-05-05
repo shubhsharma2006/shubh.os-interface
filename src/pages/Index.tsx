@@ -1,16 +1,49 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useEffect, useState } from 'react';
+import BootIntro from '@/components/BootIntro';
+import CustomCursor from '@/components/CustomCursor';
+import Nav from '@/components/Nav';
+import Hero from '@/components/Hero';
+import SectionDivider from '@/components/SectionDivider';
+import Projects from '@/components/Projects';
+import Contact from '@/components/Contact';
+import Footer from '@/components/Footer';
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const SEEN_KEY = 'shubhos.booted';
+
+const Index = () => {
+  const [booting, setBooting] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return !sessionStorage.getItem(SEEN_KEY);
+  });
+
+  useEffect(() => {
+    if (!booting) sessionStorage.setItem(SEEN_KEY, '1');
+    document.title = 'SHUBH.OS — Architect of Intelligent Systems';
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute('content', 'SHUBH.OS — portfolio of Shubh, building compilers, AI interfaces and developer tools.');
+  }, [booting]);
+
+  useEffect(() => {
+    if (!booting) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setBooting(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [booting]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
-    </div>
+    <>
+      {booting && <BootIntro onDone={() => setBooting(false)} />}
+      <CustomCursor />
+      <Nav />
+      <main>
+        <Hero />
+        <SectionDivider />
+        <Projects />
+        <Contact />
+      </main>
+      <Footer />
+    </>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
