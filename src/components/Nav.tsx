@@ -27,8 +27,12 @@ export default function Nav() {
         </a>
         <nav className="hidden items-center gap-8 md:flex">
           {link('hero', '01 · core')}
-          {link('projects', '02 · modules')}
-          {link('contact', '03 · uplink')}
+          {link('about', '02 · narrative')}
+          {link('skills', '03 · neural')}
+          {link('projects', '04 · modules')}
+          {link('experience', '05 · history')}
+          {link('ast', '06 · ast')}
+          {link('contact', '07 · uplink')}
         </nav>
         <a
           href="#contact"

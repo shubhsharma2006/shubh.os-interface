@@ -3,8 +3,13 @@ import BootIntro from '@/components/BootIntro';
 import CustomCursor from '@/components/CustomCursor';
 import Nav from '@/components/Nav';
 import Hero from '@/components/Hero';
+import About from '@/components/About';
+import SkillNetwork from '@/components/SkillNetwork';
 import SectionDivider from '@/components/SectionDivider';
 import Projects from '@/components/Projects';
+import ExecutionHistory from '@/components/ExecutionHistory';
+import StatsDashboard from '@/components/StatsDashboard';
+import ASTVisualization from '@/components/ASTVisualization';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 
@@ -37,8 +42,13 @@ const Index = () => {
       <Nav />
       <main>
         <Hero />
+        <About />
+        <SkillNetwork />
         <SectionDivider />
         <Projects />
+        <ExecutionHistory />
+        <StatsDashboard />
+        <ASTVisualization />
         <Contact />
       </main>
       <Footer />
