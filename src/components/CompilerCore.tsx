@@ -1,8 +1,7 @@
 import { Suspense, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, Icosahedron, Torus } from '@react-three/drei';
-import { EffectComposer, Bloom, ChromaticAberration } from '@react-three/postprocessing';
-import { BlendFunction } from 'postprocessing';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 
 function OrbitingNodes() {
@@ -133,12 +132,6 @@ export default function CompilerCore() {
         </Suspense>
         <EffectComposer>
           <Bloom intensity={1.1} luminanceThreshold={0.15} luminanceSmoothing={0.9} mipmapBlur />
-          <ChromaticAberration
-            blendFunction={BlendFunction.NORMAL}
-            offset={[0.0008, 0.0012] as unknown as [number, number]}
-            radialModulation={false}
-            modulationOffset={0}
-          />
         </EffectComposer>
       </Canvas>
     </div>
