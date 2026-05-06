@@ -1,6 +1,7 @@
 import { Project } from '@/lib/projects';
 import { useRef } from 'react';
 import { ArrowUpRight, Github } from 'lucide-react';
+import { GlassCard } from './ui/GlassCard';
 
 export default function ModuleCard({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -10,7 +11,7 @@ export default function ModuleCard({ project, index }: { project: Project; index
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width - 0.5;
     const y = (e.clientY - r.top) / r.height - 0.5;
-    el.style.transform = `perspective(1000px) rotateX(${y * -4}deg) rotateY(${x * 6}deg)`;
+    el.style.transform = `perspective(1000px) rotateX(${y * -10}deg) rotateY(${x * 10}deg) scale(1.02)`;
     el.style.setProperty('--mx', `${(x + 0.5) * 100}%`);
     el.style.setProperty('--my', `${(y + 0.5) * 100}%`);
   };
@@ -26,8 +27,9 @@ export default function ModuleCard({ project, index }: { project: Project; index
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       style={{ animationDelay: `${index * 70}ms` }}
-      className={`group relative overflow-hidden rounded-2xl glass holo-border p-6 transition-[transform,box-shadow] duration-300 ease-out will-change-transform animate-slide-up hover:shadow-[0_30px_80px_-20px_hsl(var(--primary)/0.3)] ${sizeClass}`}
+      className={`group relative overflow-hidden rounded-2xl transition-[transform,box-shadow] duration-300 ease-out will-change-transform animate-slide-up ${sizeClass}`}
     >
+      <GlassCard interactive className="h-full p-6">
       {/* Cursor-following glow */}
       <div
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -86,6 +88,7 @@ export default function ModuleCard({ project, index }: { project: Project; index
           )}
         </div>
       </div>
+      </GlassCard>
     </div>
   );
 }

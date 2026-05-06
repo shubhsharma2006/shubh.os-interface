@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { GlassCard } from './ui/GlassCard';
 
 const About = () => {
   const containerVariants = {
@@ -68,19 +69,12 @@ const About = () => {
           className="grid grid-cols-1 gap-6 md:grid-cols-3"
         >
           {cards.map((card, i) => (
-            <motion.div
-              key={i}
-              variants={itemVariants}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-md transition-all duration-500 hover:border-primary/50 hover:bg-white/10"
-            >
-              {/* Glow effect on hover */}
-              <div className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-transparent blur-2xl" />
-              </div>
-
-              <div className="mb-4 text-4xl">{card.icon}</div>
-              <h3 className="mb-3 text-lg font-semibold text-foreground">{card.title}</h3>
-              <p className="text-sm leading-relaxed text-muted-foreground">{card.description}</p>
+            <motion.div key={i} variants={itemVariants}>
+              <GlassCard interactive className="p-8 h-full">
+                <div className="mb-4 text-4xl">{card.icon}</div>
+                <h3 className="mb-3 text-lg font-semibold text-foreground">{card.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{card.description}</p>
+              </GlassCard>
             </motion.div>
           ))}
         </motion.div>

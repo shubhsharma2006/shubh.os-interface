@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import MagneticButton from './MagneticButton';
 import { useTypewriter } from '@/hooks/useTypewriter';
+import { GlassCard } from './ui/GlassCard';
 
 const CompilerCore = lazy(() => import('./CompilerCore'));
 
@@ -58,10 +59,10 @@ export default function Hero() {
               { k: 'UPTIME', v: '99.99%' },
               { k: 'TOKENS/D', v: '1.4M' },
             ].map((s) => (
-              <div key={s.k} className="border-l border-border/80 pl-4">
+              <GlassCard key={s.k} className="px-4 py-3">
                 <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{s.k}</div>
                 <div className="mt-1 text-lg text-foreground">{s.v}</div>
-              </div>
+              </GlassCard>
             ))}
           </div>
         </div>
@@ -90,7 +91,7 @@ export default function Hero() {
       {/* Scroll indicator */}
       <div className="container-x mt-24 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
         <span>scroll · explore modules</span>
-        <span className="hidden md:inline">[ section 01 / 04 ]</span>
+        <span className="hidden md:inline">[ section 01 / 07 ]</span>
       </div>
     </section>
   );
@@ -98,9 +99,9 @@ export default function Hero() {
 
 function Hud({ label, value, position }: { label: string; value: string; position: string }) {
   return (
-    <div className={`absolute ${position} glass-strong rounded-lg px-3 py-2 font-mono text-[10px] uppercase tracking-widest`}>
+    <GlassCard className={`absolute ${position} px-3 py-2 font-mono text-[10px] uppercase tracking-widest`}>
       <div className="text-muted-foreground">{label}</div>
       <div className="mt-0.5 text-primary">{value}</div>
-    </div>
+    </GlassCard>
   );
 }

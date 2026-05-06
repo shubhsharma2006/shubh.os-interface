@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { GlassCard } from './ui/GlassCard';
 
 interface Stat {
   label: string;
@@ -86,34 +87,22 @@ const StatsDashboard = () => {
           className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4"
         >
           {stats.map((stat, i) => (
-            <motion.div
-              key={i}
-              variants={itemVariants}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-8 backdrop-blur-md transition-all duration-500 hover:border-primary/50 hover:bg-white/10"
-            >
-              {/* Animated background glow */}
-              <div className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-transparent blur-2xl" />
-              </div>
+            <motion.div key={i} variants={itemVariants}>
+              <GlassCard interactive className="p-8 h-full">
+                {/* Icon */}
+                <div className="mb-6 text-4xl">{stat.icon}</div>
 
-              {/* Icon */}
-              <div className="mb-6 text-4xl">{stat.icon}</div>
-
-              {/* Value */}
-              <div className="mb-2">
-                <div className="font-display text-5xl font-bold text-gradient">
-                  {displayValues[i]}
-                  <span className="text-2xl">{stat.suffix}</span>
+                {/* Value */}
+                <div className="mb-2">
+                  <div className="font-display text-5xl font-bold text-gradient">
+                    {displayValues[i]}
+                    <span className="text-2xl">{stat.suffix}</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Label */}
-              <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{stat.label}</p>
-
-              {/* Animated border */}
-              <div className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                <div className="absolute inset-0 rounded-2xl border border-primary/50" />
-              </div>
+                {/* Label */}
+                <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{stat.label}</p>
+              </GlassCard>
             </motion.div>
           ))}
         </motion.div>

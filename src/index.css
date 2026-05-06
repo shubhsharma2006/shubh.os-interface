@@ -8,11 +8,62 @@
 
 @layer base {
   :root {
-    /* Core surfaces */
-    --background: 225 40% 3%;            /* deep black #05060A */
-    --foreground: 215 40% 94%;           /* soft white */
+    /* Core surfaces - Light Mode */
+    --background: 0 0% 100%;
+    --foreground: 225 40% 5%;
 
-    --surface: 222 35% 7%;               /* panel #0B0F1A */
+    --surface: 225 20% 96%;
+    --surface-2: 225 20% 92%;
+    --surface-3: 225 20% 88%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 225 40% 5%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 225 40% 5%;
+
+    /* Brand: neural cyan */
+    --primary: 184 100% 45%;             /* Darker for light mode */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 184 100% 50%;
+
+    /* Electric blue */
+    --secondary: 217 91% 60%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Holographic violet */
+    --accent: 255 92% 70%;
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 225 20% 92%;
+    --muted-foreground: 225 10% 40%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 225 20% 90%;
+    --input: 225 20% 94%;
+    --ring: 184 100% 45%;
+
+    --radius: 0.75rem;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 50%, hsl(var(--accent)) 100%);
+    --gradient-glow: radial-gradient(60% 60% at 50% 40%, hsl(var(--primary) / 0.12), transparent 70%);
+    --gradient-panel: linear-gradient(180deg, hsl(var(--surface) / 0.8), hsl(var(--surface-2) / 0.6));
+    --gradient-border: linear-gradient(135deg, hsl(var(--primary) / 0.4), hsl(var(--accent) / 0.3), hsl(var(--secondary) / 0.2));
+
+    /* Shadows / glow */
+    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.15);
+    --shadow-deep: 0 30px 80px -20px hsl(225 20% 80% / 0.4);
+    --shadow-panel: 0 1px 0 hsl(var(--primary) / 0.05) inset, 0 30px 60px -30px hsl(225 20% 80% / 0.5);
+  }
+
+  .dark {
+    --background: 225 40% 3%;
+    --foreground: 215 40% 94%;
+
+    --surface: 222 35% 7%;
     --surface-2: 222 30% 10%;
     --surface-3: 222 25% 14%;
 
@@ -22,46 +73,30 @@
     --popover: 222 35% 7%;
     --popover-foreground: 215 40% 94%;
 
-    /* Brand: neural cyan */
-    --primary: 184 100% 74%;             /* #7DF9FF */
+    --primary: 184 100% 74%;
     --primary-foreground: 225 40% 5%;
     --primary-glow: 184 100% 60%;
 
-    /* Electric blue */
-    --secondary: 217 91% 60%;            /* #3B82F6 */
+    --secondary: 217 91% 60%;
     --secondary-foreground: 215 40% 98%;
 
-    /* Holographic violet */
-    --accent: 255 92% 76%;               /* #A78BFA */
+    --accent: 255 92% 76%;
     --accent-foreground: 225 40% 5%;
 
     --muted: 222 25% 14%;
     --muted-foreground: 215 20% 60%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 215 40% 98%;
-
     --border: 220 30% 18%;
     --input: 220 30% 14%;
     --ring: 184 100% 74%;
 
-    --radius: 0.75rem;
-
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 50%, hsl(var(--accent)) 100%);
     --gradient-glow: radial-gradient(60% 60% at 50% 40%, hsl(var(--primary) / 0.18), transparent 70%);
     --gradient-panel: linear-gradient(180deg, hsl(var(--surface) / 0.85), hsl(var(--surface-2) / 0.65));
     --gradient-border: linear-gradient(135deg, hsl(var(--primary) / 0.6), hsl(var(--accent) / 0.5), hsl(var(--secondary) / 0.4));
 
-    /* Shadows / glow */
     --shadow-glow: 0 0 40px hsl(var(--primary) / 0.25);
     --shadow-deep: 0 30px 80px -20px hsl(225 80% 2% / 0.8);
     --shadow-panel: 0 1px 0 hsl(var(--primary) / 0.08) inset, 0 30px 60px -30px hsl(225 80% 2% / 0.9);
-  }
-
-  .dark { /* same as :root — app is permanently dark */
-    --background: 225 40% 3%;
-    --foreground: 215 40% 94%;
   }
 }
 

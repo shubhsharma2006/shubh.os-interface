@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import BootIntro from '@/components/BootIntro';
-import CustomCursor from '@/components/CustomCursor';
+import { CursorFollower } from '@/components/ui/CursorFollower';
 import Nav from '@/components/Nav';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
@@ -38,7 +38,7 @@ const Index = () => {
   return (
     <>
       {booting && <BootIntro onDone={() => setBooting(false)} />}
-      <CustomCursor />
+      <CursorFollower />
       <Nav />
       <main>
         <Hero />

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ThemeToggle } from './ThemeToggle';
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -34,12 +35,15 @@ export default function Nav() {
           {link('ast', '06 · ast')}
           {link('contact', '07 · uplink')}
         </nav>
-        <a
-          href="#contact"
-          className="rounded-full border border-border px-4 py-1.5 font-mono text-[11px] uppercase tracking-widest text-foreground transition-colors hover:border-primary/60 hover:text-primary"
-        >
-          hire ↗
-        </a>
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
+          <a
+            href="#contact"
+            className="rounded-full border border-border px-4 py-1.5 font-mono text-[11px] uppercase tracking-widest text-foreground transition-colors hover:border-primary/60 hover:text-primary"
+          >
+            hire ↗
+          </a>
+        </div>
       </div>
     </header>
   );
