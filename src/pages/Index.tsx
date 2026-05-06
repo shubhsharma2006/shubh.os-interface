@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import BootIntro from '@/components/BootIntro';
 import CustomCursor from '@/components/CustomCursor';
 import Nav from '@/components/Nav';
+import ScrollRail from '@/components/ScrollRail';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
 import SkillNetwork from '@/components/SkillNetwork';
@@ -39,6 +40,7 @@ const Index = () => {
     <>
       {booting && <BootIntro onDone={() => setBooting(false)} />}
       <CustomCursor />
+      <ScrollRail />
       <Nav />
       <main>
         <Hero />

@@ -1,351 +1,209 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { tokenize, parse, evaluate, layout, type Token, type FlatNode } from '@/lib/miniCompiler';
 
-interface ASTNode {
-  id: string;
-  label: string;
-  x: number;
-  y: number;
-  depth: number;
-  children: string[];
-}
+const SAMPLES = [
+  { name: 'arithmetic', src: '5 + 3 * 2' },
+  { name: 'binding', src: 'let x = 10;\nlet y = x * 2 + 4;\ny - 1' },
+  { name: 'nested', src: 'let r = (3 + 4) * (8 - 2);\nr / 2' },
+];
 
 const ASTVisualization = () => {
+  const [src, setSrc] = useState(SAMPLES[1].src);
+  const [hovered, setHovered] = useState<string | null>(null);
+
+  const compiled = useMemo(() => {
+    try {
+      const tokens = tokenize(src);
+      const ast = parse(tokens);
+      const ev = evaluate(ast);
+      const nodes = layout(ast);
+      return { tokens, ast, nodes, result: ev.result, env: ev.env, trace: ev.trace, error: null as string | null };
+    } catch (e) {
+      return { tokens: [] as Token[], nodes: [] as FlatNode[], result: undefined, env: {}, trace: [], error: (e as Error).message };
+    }
+  }, [src]);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [selectedCode, setSelectedCode] = useState<'simple' | 'complex'>('simple');
-  const [animationProgress, setAnimationProgress] = useState(0);
-
-  // Simple AST: const x = 5 + 3
-  const simpleAST: Record<string, ASTNode> = {
-    root: {
-      id: 'root',
-      label: 'Program',
-      x: 50,
-      y: 10,
-      depth: 0,
-      children: ['var1'],
-    },
-    var1: {
-      id: 'var1',
-      label: 'VariableDeclaration',
-      x: 50,
-      y: 25,
-      depth: 1,
-      children: ['id1', 'init1'],
-    },
-    id1: {
-      id: 'id1',
-      label: 'Identifier: x',
-      x: 35,
-      y: 40,
-      depth: 2,
-      children: [],
-    },
-    init1: {
-      id: 'init1',
-      label: 'BinaryExpression',
-      x: 65,
-      y: 40,
-      depth: 2,
-      children: ['left1', 'op1', 'right1'],
-    },
-    left1: {
-      id: 'left1',
-      label: 'Literal: 5',
-      x: 50,
-      y: 55,
-      depth: 3,
-      children: [],
-    },
-    op1: {
-      id: 'op1',
-      label: 'Operator: +',
-      x: 65,
-      y: 55,
-      depth: 3,
-      children: [],
-    },
-    right1: {
-      id: 'right1',
-      label: 'Literal: 3',
-      x: 80,
-      y: 55,
-      depth: 3,
-      children: [],
-    },
-  };
-
-  // Complex AST: const factorial = (n) => n <= 1 ? 1 : n * factorial(n - 1)
-  const complexAST: Record<string, ASTNode> = {
-    root: {
-      id: 'root',
-      label: 'Program',
-      x: 50,
-      y: 5,
-      depth: 0,
-      children: ['var2'],
-    },
-    var2: {
-      id: 'var2',
-      label: 'VariableDeclaration',
-      x: 50,
-      y: 15,
-      depth: 1,
-      children: ['id2', 'arrow'],
-    },
-    id2: {
-      id: 'id2',
-      label: 'Identifier: factorial',
-      x: 30,
-      y: 25,
-      depth: 2,
-      children: [],
-    },
-    arrow: {
-      id: 'arrow',
-      label: 'ArrowFunction',
-      x: 70,
-      y: 25,
-      depth: 2,
-      children: ['param', 'ternary'],
-    },
-    param: {
-      id: 'param',
-      label: 'Parameter: n',
-      x: 60,
-      y: 35,
-      depth: 3,
-      children: [],
-    },
-    ternary: {
-      id: 'ternary',
-      label: 'ConditionalExpression',
-      x: 80,
-      y: 35,
-      depth: 3,
-      children: ['test', 'consequent', 'alternate'],
-    },
-    test: {
-      id: 'test',
-      label: 'BinaryExpression: <=',
-      x: 70,
-      y: 50,
-      depth: 4,
-      children: ['n1', 'one1'],
-    },
-    n1: {
-      id: 'n1',
-      label: 'Identifier: n',
-      x: 60,
-      y: 60,
-      depth: 5,
-      children: [],
-    },
-    one1: {
-      id: 'one1',
-      label: 'Literal: 1',
-      x: 80,
-      y: 60,
-      depth: 5,
-      children: [],
-    },
-    consequent: {
-      id: 'consequent',
-      label: 'Literal: 1',
-      x: 85,
-      y: 50,
-      depth: 4,
-      children: [],
-    },
-    alternate: {
-      id: 'alternate',
-      label: 'BinaryExpression: *',
-      x: 95,
-      y: 50,
-      depth: 4,
-      children: ['n2', 'call'],
-    },
-    n2: {
-      id: 'n2',
-      label: 'Identifier: n',
-      x: 90,
-      y: 65,
-      depth: 5,
-      children: [],
-    },
-    call: {
-      id: 'call',
-      label: 'CallExpression',
-      x: 100,
-      y: 65,
-      depth: 5,
-      children: [],
-    },
-  };
-
-  const currentAST = selectedCode === 'simple' ? simpleAST : complexAST;
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
+    const canvas = canvasRef.current; if (!canvas) return;
+    const ctx = canvas.getContext('2d'); if (!ctx) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
 
-    const animate = () => {
-      // Clear
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.3)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    let raf = 0;
+    let t = 0;
+    const draw = () => {
+      t += 0.016;
+      ctx.clearRect(0, 0, rect.width, rect.height);
 
-      // Draw connections
-      Object.values(currentAST).forEach((node) => {
-        node.children.forEach((childId) => {
-          const child = currentAST[childId];
-          if (!child) return;
+      const pad = 40;
+      const W = rect.width - pad * 2;
+      const H = rect.height - pad * 2;
+      const colors = ['#7DF9FF', '#A78BFA', '#3B82F6', '#34D399', '#FBBF24'];
 
-          const x1 = (node.x / 100) * canvas.width;
-          const y1 = (node.y / 100) * canvas.height;
-          const x2 = (child.x / 100) * canvas.width;
-          const y2 = (child.y / 100) * canvas.height;
+      const xy = (n: FlatNode) => ({ x: pad + n.x * W, y: pad + n.y * H });
 
-          // Gradient line
-          const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
-          gradient.addColorStop(0, 'rgba(0, 217, 255, 0.3)');
-          gradient.addColorStop(1, 'rgba(167, 139, 250, 0.3)');
-
-          ctx.strokeStyle = gradient;
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
-          ctx.stroke();
-        });
-      });
-
-      // Draw nodes
-      Object.values(currentAST).forEach((node) => {
-        const x = (node.x / 100) * canvas.width;
-        const y = (node.y / 100) * canvas.height;
-
-        // Determine color based on depth
-        const colors = ['#00d9ff', '#a78bfa', '#fbbf24', '#34d399', '#f87171'];
-        const color = colors[node.depth % colors.length];
-
-        // Glow
-        ctx.fillStyle = color + '20';
-        ctx.beginPath();
-        ctx.arc(x, y, 12, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Node
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(x, y, 6, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Pulse animation
-        const pulse = Math.sin(animationProgress * 0.05 + node.depth) * 0.5 + 0.5;
-        ctx.strokeStyle = color + Math.floor(pulse * 255).toString(16).padStart(2, '0');
-        ctx.lineWidth = 2;
+      // edges
+      const byId = new Map(compiled.nodes.map((n) => [n.id, n]));
+      compiled.nodes.forEach((n) => {
+        if (!n.parent) return;
+        const p = byId.get(n.parent); if (!p) return;
+        const a = xy(p), b = xy(n);
+        const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+        grad.addColorStop(0, 'rgba(125, 249, 255, 0.55)');
+        grad.addColorStop(1, 'rgba(167, 139, 250, 0.4)');
+        ctx.strokeStyle = grad; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y);
+        ctx.bezierCurveTo(a.x, (a.y + b.y) / 2, b.x, (a.y + b.y) / 2, b.x, b.y);
         ctx.stroke();
       });
 
-      setAnimationProgress((p) => (p + 1) % 360);
-      requestAnimationFrame(animate);
+      // nodes
+      compiled.nodes.forEach((n) => {
+        const { x, y } = xy(n);
+        const color = colors[n.depth % colors.length];
+        const isHover = hovered === n.id;
+        const r = 5 + Math.sin(t * 2 + n.depth) * 0.8;
+        ctx.fillStyle = color + '22';
+        ctx.beginPath(); ctx.arc(x, y, r * 3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.arc(x, y, isHover ? r + 3 : r, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(229, 231, 235, 0.85)';
+        ctx.font = '10px JetBrains Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.label, x, y - 10);
+      });
+
+      raf = requestAnimationFrame(draw);
     };
+    draw();
+    return () => cancelAnimationFrame(raf);
+  }, [compiled.nodes, hovered]);
 
-    const id = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(id);
-  }, [currentAST, animationProgress]);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.2 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8, ease: 'easeOut' as const },
-    },
+  const handleMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current; if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+    const pad = 40; const W = rect.width - pad * 2; const H = rect.height - pad * 2;
+    let h: string | null = null;
+    for (const n of compiled.nodes) {
+      const nx = pad + n.x * W; const ny = pad + n.y * H;
+      if ((nx - x) ** 2 + (ny - y) ** 2 < 14 ** 2) { h = n.id; break; }
+    }
+    setHovered(h);
   };
 
   return (
     <section id="ast" className="relative py-32">
       <div className="container-x">
         <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
-          className="mb-14"
+          transition={{ duration: 0.7 }}
+          className="mb-10"
         >
-          <motion.div variants={itemVariants} className="mb-4 font-mono text-[11px] uppercase tracking-[0.4em] text-muted-foreground">
-            // chapter 06 · ast visualization
-          </motion.div>
-          <motion.h2 variants={itemVariants} className="font-display text-4xl font-semibold tracking-tight text-foreground md:text-6xl">
-            Parsing <span className="text-gradient">intelligence</span>.
-          </motion.h2>
-        </motion.div>
-
-        {/* Controls */}
-        <motion.div
-          variants={itemVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
-          className="mb-8 flex gap-4"
-        >
-          {(['simple', 'complex'] as const).map((code) => (
-            <button
-              key={code}
-              onClick={() => setSelectedCode(code)}
-              className={`rounded-lg px-4 py-2 font-mono text-sm transition-all ${
-                selectedCode === code
-                  ? 'border-primary bg-primary/20 text-primary'
-                  : 'border border-white/10 bg-white/5 text-muted-foreground hover:border-primary/50'
-              }`}
-            >
-              {code === 'simple' ? 'const x = 5 + 3' : 'factorial(n)'}
-            </button>
-          ))}
-        </motion.div>
-
-        {/* Canvas */}
-        <motion.div
-          variants={itemVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
-          className="relative mb-8 h-96 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-md"
-        >
-          <canvas ref={canvasRef} className="h-full w-full" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-        </motion.div>
-
-        {/* Description */}
-        <motion.div
-          variants={itemVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
-          className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md"
-        >
-          <p className="font-mono text-sm text-muted-foreground">
-            <span className="text-primary">{'>'}</span> This AST visualizer demonstrates compiler fundamentals: parsing code into abstract syntax trees,
-            analyzing structure, and optimizing execution. Each node represents a language construct, connected through a hierarchical graph.
-            This is the foundation of intelligent code analysis and transformation systems.
+          <div className="mb-4 font-mono text-[11px] uppercase tracking-[0.4em] text-muted-foreground">
+            // chapter 06 · live compiler pipeline
+          </div>
+          <h2 className="font-display text-4xl font-semibold tracking-tight text-foreground md:text-6xl">
+            Tokenize · parse · <span className="text-gradient">execute</span>.
+          </h2>
+          <p className="mt-4 max-w-2xl font-mono text-sm text-muted-foreground">
+            <span className="text-primary">{'>'}</span> Type into the editor. The pipeline lexes, builds an AST, then evaluates — live.
           </p>
         </motion.div>
+
+        {/* Sample chips */}
+        <div className="mb-6 flex flex-wrap gap-2 font-mono text-xs">
+          {SAMPLES.map((s) => (
+            <button
+              key={s.name}
+              onClick={() => setSrc(s.src)}
+              className="rounded-full border border-border bg-surface/50 px-3 py-1 text-muted-foreground transition hover:border-primary/50 hover:text-primary"
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+          {/* Editor + tokens + result */}
+          <div className="space-y-4">
+            <div className="glass holo-border overflow-hidden rounded-xl">
+              <div className="flex items-center justify-between border-b border-border px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                <span>source.lex</span>
+                <span className={compiled.error ? 'text-destructive' : 'text-primary'}>
+                  {compiled.error ? 'parse error' : 'compiled ✓'}
+                </span>
+              </div>
+              <textarea
+                value={src}
+                onChange={(e) => setSrc(e.target.value)}
+                spellCheck={false}
+                className="block h-44 w-full resize-none bg-transparent p-4 font-mono text-sm text-foreground outline-none"
+              />
+            </div>
+
+            <div className="glass rounded-xl p-4">
+              <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">tokens</div>
+              <div className="flex flex-wrap gap-1.5 font-mono text-xs">
+                {compiled.tokens.map((t, i) => (
+                  <span
+                    key={i}
+                    className="rounded border border-border bg-surface/60 px-2 py-0.5 text-foreground"
+                    title={t.type}
+                  >
+                    <span className="text-muted-foreground">{t.type}:</span> {t.raw}
+                  </span>
+                ))}
+                {compiled.tokens.length === 0 && <span className="text-muted-foreground">—</span>}
+              </div>
+            </div>
+
+            <div className="glass rounded-xl p-4">
+              <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">execution</div>
+              {compiled.error ? (
+                <div className="font-mono text-sm text-destructive">{'> '}{compiled.error}</div>
+              ) : (
+                <>
+                  <div className="font-mono text-sm">
+                    <span className="text-muted-foreground">{'> '}result =</span>{' '}
+                    <span className="text-primary text-glow">{String(compiled.result)}</span>
+                  </div>
+                  {Object.keys(compiled.env).length > 0 && (
+                    <div className="mt-2 font-mono text-xs text-muted-foreground">
+                      env: {Object.entries(compiled.env).map(([k, v]) => `${k}=${v}`).join(', ')}
+                    </div>
+                  )}
+                  {compiled.trace.length > 0 && (
+                    <div className="mt-3 max-h-28 space-y-0.5 overflow-y-auto font-mono text-[11px] text-muted-foreground">
+                      {compiled.trace.map((t, i) => <div key={i}>· {t}</div>)}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* AST canvas */}
+          <div className="glass holo-border relative h-[460px] overflow-hidden rounded-xl">
+            <div className="absolute left-4 top-3 z-10 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              ast.tree · {compiled.nodes.length} nodes
+            </div>
+            <canvas
+              ref={canvasRef}
+              onMouseMove={handleMove}
+              onMouseLeave={() => setHovered(null)}
+              className="h-full w-full"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+          </div>
+        </div>
       </div>
     </section>
   );
