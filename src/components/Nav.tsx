@@ -24,16 +24,15 @@ export default function Nav() {
       <div className={`container-x flex items-center justify-between rounded-full px-5 py-3 transition-all ${scrolled ? 'glass-strong' : ''}`}>
         <a href="#hero" className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.3em]">
           <span className="status-dot" />
-          <span className="text-foreground">SHUBH<span className="text-primary">.OS</span></span>
+          <span className="text-foreground">shubh<span className="text-primary">.</span></span>
         </a>
         <nav className="hidden items-center gap-8 md:flex">
-          {link('hero', '01 · core')}
-          {link('about', '02 · narrative')}
-          {link('skills', '03 · neural')}
-          {link('projects', '04 · modules')}
-          {link('experience', '05 · history')}
-          {link('ast', '06 · ast')}
-          {link('contact', '07 · uplink')}
+          {link('about', 'about')}
+          {link('work', 'work')}
+          {link('process', 'process')}
+          {link('experience', 'experience')}
+          {link('playground', 'playground')}
+          {link('contact', 'contact')}
         </nav>
         <div className="flex items-center gap-4">
           <ThemeToggle />
