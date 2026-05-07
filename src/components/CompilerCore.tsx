@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Bloom, EffectComposer, Noise, Vignette } from '@react-three/postprocessing';
 import { FloatingCore } from './3d/FloatingCore';
 
 export default function CompilerCore() {
@@ -19,17 +18,6 @@ export default function CompilerCore() {
         
         <Suspense fallback={null}>
           <FloatingCore />
-          
-          <EffectComposer disableNormalPass>
-            <Bloom 
-              luminanceThreshold={0.2} 
-              mipmapBlur 
-              intensity={1.5} 
-              radius={0.4} 
-            />
-            <Noise opacity={0.02} />
-            <Vignette eskil={false} offset={0.1} darkness={1.1} />
-          </EffectComposer>
         </Suspense>
       </Canvas>
     </div>
