@@ -1,107 +1,95 @@
 import { lazy, Suspense } from 'react';
+import { motion } from 'framer-motion';
 import MagneticButton from './MagneticButton';
-import { useTypewriter } from '@/hooks/useTypewriter';
-import { GlassCard } from './ui/GlassCard';
+import SplitText from './SplitText';
+import { fadeUp, stagger } from '@/lib/motion';
 
 const CompilerCore = lazy(() => import('./CompilerCore'));
 
-const ROLES = [
-  'compilers',
-  'ai interfaces',
-  'developer tools',
-  'systems software',
-];
-
 export default function Hero() {
-  const role = useTypewriter(ROLES, 80, 1500);
-
   const scrollTo = (id: string) => () => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <section id="hero" className="relative isolate min-h-screen overflow-hidden pt-28">
-      {/* Background grid + ambient */}
       <div className="absolute inset-0 -z-10 bg-grid opacity-60" />
       <div className="absolute inset-x-0 top-0 -z-10 h-[60vh]" style={{ background: 'var(--gradient-glow)' }} />
 
-      <div className="container-x grid items-center gap-10 lg:grid-cols-[1.05fr_1fr]">
-        {/* Left: copy */}
-        <div className="relative animate-fade-in">
-          <div className="mb-8 inline-flex items-center gap-3 rounded-full border border-border bg-surface/60 px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground backdrop-blur">
+      <div className="container-x grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
+        <motion.div
+          className="relative"
+          variants={stagger(0.12)}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div
+            variants={fadeUp}
+            className="mb-8 inline-flex items-center gap-3 rounded-full border border-border bg-surface/60 px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground backdrop-blur"
+          >
             <span className="status-dot" />
-            <span>System online · Q3 2026</span>
-          </div>
+            <span>Available for freelance · May 2026</span>
+          </motion.div>
 
-          <h1 className="font-display text-5xl font-semibold leading-[0.95] tracking-tight text-foreground md:text-7xl lg:text-[5.5rem]">
-            ARCHITECT OF<br />
-            <span className="text-gradient text-glow">INTELLIGENT</span><br />
-            SYSTEMS
+          <h1 className="font-display text-5xl font-semibold leading-[0.95] tracking-tight text-foreground md:text-7xl lg:text-[5.75rem]">
+            <SplitText text="Designing" className="block" />
+            <SplitText text="immersive" className="block text-gradient text-glow" delay={0.05} />
+            <SplitText text="digital products." className="block" delay={0.06} />
           </h1>
 
-          <p className="mt-7 max-w-md font-mono text-sm leading-relaxed text-muted-foreground md:text-base">
-            <span className="text-primary">{'>'}</span> shubh — building{' '}
-            <span className="text-foreground">{role}</span>
-            <span className="ml-0.5 inline-block w-2 animate-blink text-primary">▍</span>
-            <br />
-            <span className="text-primary">{'>'}</span> compiling thought into runtime since 2021.
-          </p>
+          <motion.p
+            variants={fadeUp}
+            className="mt-7 max-w-md text-base leading-relaxed text-muted-foreground md:text-lg"
+          >
+            I'm <span className="text-foreground">Shubh</span> — a creative engineer crafting cinematic
+            interfaces, 3D experiences and developer tools that feel as good as they perform.
+          </motion.p>
 
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <MagneticButton onClick={scrollTo('projects')}>Engage</MagneticButton>
-            <MagneticButton variant="ghost" onClick={scrollTo('contact')}>View modules →</MagneticButton>
-          </div>
+          <motion.div variants={fadeUp} className="mt-10 flex flex-wrap items-center gap-4">
+            <MagneticButton onClick={scrollTo('work')}>View work</MagneticButton>
+            <MagneticButton variant="ghost" onClick={scrollTo('contact')}>Get in touch →</MagneticButton>
+          </motion.div>
 
-          {/* Stat strip */}
-          <div className="mt-14 grid max-w-md grid-cols-3 gap-4 font-mono">
-            {[
-              { k: 'MODULES', v: '12+' },
-              { k: 'UPTIME', v: '99.99%' },
-              { k: 'TOKENS/D', v: '1.4M' },
-            ].map((s) => (
-              <GlassCard key={s.k} className="px-4 py-3">
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{s.k}</div>
-                <div className="mt-1 text-lg text-foreground">{s.v}</div>
-              </GlassCard>
-            ))}
-          </div>
-        </div>
+          <motion.div variants={fadeUp} className="mt-14 flex items-center gap-8 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+            <div><span className="text-foreground">5+</span> yrs experience</div>
+            <div className="h-3 w-px bg-border" />
+            <div><span className="text-foreground">40+</span> projects shipped</div>
+            <div className="h-3 w-px bg-border" />
+            <div><span className="text-foreground">12</span> countries</div>
+          </motion.div>
+        </motion.div>
 
-        {/* Right: 3D crystal + HUD */}
-        <div className="relative aspect-square w-full max-w-[640px] justify-self-center">
+        <motion.div
+          className="relative aspect-square w-full max-w-[600px] justify-self-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div className="absolute inset-0 rounded-[2rem] glass holo-border overflow-hidden">
-            <Suspense fallback={<div className="flex h-full items-center justify-center font-mono text-xs text-muted-foreground">booting core…</div>}>
+            <Suspense fallback={<div className="flex h-full items-center justify-center font-mono text-xs text-muted-foreground">loading…</div>}>
               <CompilerCore />
             </Suspense>
-
-            {/* Scanline */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-30">
               <div className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent" style={{ animation: 'scan 6s linear infinite' }} />
             </div>
-
-            {/* HUD chips */}
-            <Hud label="CORE_TEMP" value="36.2°C" position="top-4 left-4" />
-            <Hud label="NEURAL_LOAD" value="42%" position="top-4 right-4" />
-            <Hud label="UPTIME" value="99.99%" position="bottom-4 left-4" />
-            <Hud label="MODULE" value="compiler.core" position="bottom-4 right-4" />
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="container-x mt-24 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-        <span>scroll · explore modules</span>
-        <span className="hidden md:inline">[ section 01 / 07 ]</span>
-      </div>
+      <motion.div
+        className="container-x mt-24 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2 }}
+      >
+        <motion.span
+          animate={{ y: [0, 4, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          ↓ scroll to explore
+        </motion.span>
+        <span className="hidden md:inline">Portfolio · 2026</span>
+      </motion.div>
     </section>
-  );
-}
-
-function Hud({ label, value, position }: { label: string; value: string; position: string }) {
-  return (
-    <GlassCard className={`absolute ${position} px-3 py-2 font-mono text-[10px] uppercase tracking-widest`}>
-      <div className="text-muted-foreground">{label}</div>
-      <div className="mt-0.5 text-primary">{value}</div>
-    </GlassCard>
   );
 }
