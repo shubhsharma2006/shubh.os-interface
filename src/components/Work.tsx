@@ -1,15 +1,7 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { PROJECTS } from '@/lib/projects';
 import { fadeUp, stagger } from '@/lib/motion';
-
-const COVERS = [
-  'linear-gradient(135deg,#0ea5e9 0%,#6366f1 60%,#a855f7 100%)',
-  'linear-gradient(135deg,#22d3ee 0%,#0891b2 100%)',
-  'linear-gradient(135deg,#a78bfa 0%,#ec4899 100%)',
-  'linear-gradient(135deg,#f59e0b 0%,#ef4444 100%)',
-  'linear-gradient(135deg,#10b981 0%,#06b6d4 100%)',
-  'linear-gradient(135deg,#6366f1 0%,#0f172a 100%)',
-];
 
 export default function Work() {
   return (
@@ -37,14 +29,14 @@ export default function Work() {
             </motion.h2>
           </div>
           <motion.p variants={fadeUp} className="max-w-md text-base text-muted-foreground">
-            A handful of projects spanning compilers, AI tools, brand sites and experiments.
-            Hover for details, click to dive in.
+            Six projects spanning compilers, AI infra, devtools and design systems.
+            Click any card to dive into the case study.
           </motion.p>
         </motion.div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-6 md:auto-rows-[260px]">
           {PROJECTS.map((p, i) => (
-            <WorkCard key={p.id} project={p} index={i} cover={COVERS[i % COVERS.length]} />
+            <WorkCard key={p.id} project={p} index={i} />
           ))}
         </div>
       </div>
@@ -55,13 +47,10 @@ export default function Work() {
 function WorkCard({
   project,
   index,
-  cover,
 }: {
   project: (typeof PROJECTS)[number];
   index: number;
-  cover: string;
 }) {
-  // Bento sizes
   const span =
     project.size === 'lg'
       ? 'md:col-span-4 md:row-span-2'
@@ -70,46 +59,60 @@ function WorkCard({
       : 'md:col-span-2';
 
   return (
-    <motion.a
-      href={project.live || project.github || '#'}
-      className={`group relative overflow-hidden rounded-2xl glass holo-border ${span}`}
+    <motion.div
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.7, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{ y: -4 }}
+      className={`group relative overflow-hidden rounded-2xl holo-border ${span}`}
     >
-      <div
-        className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-105"
-        style={{ background: cover }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+      <Link
+        to={`/work/${project.id}`}
+        className="block h-full"
+        aria-label={`${project.name} — case study`}
+      >
+        <motion.div
+          layoutId={`project-${project.id}-cover`}
+          className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-105"
+          style={{ background: project.cover }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
 
-      <div className="relative flex h-full flex-col justify-between p-6">
-        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-foreground/80">
-          <span>{project.type}</span>
-          <span className="rounded-full border border-foreground/20 px-2 py-0.5">{project.status}</span>
-        </div>
-
-        <div>
-          <h3 className="font-display text-2xl font-semibold text-foreground md:text-3xl">
-            {project.name}
-          </h3>
-          <p className="mt-2 max-w-md text-sm text-foreground/80 line-clamp-2">{project.blurb}</p>
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex flex-wrap gap-2 font-mono text-[10px] uppercase tracking-widest text-foreground/70">
-              {project.stack.slice(0, 3).map((s) => (
-                <span key={s} className="rounded-full border border-foreground/20 px-2 py-0.5">
-                  {s}
-                </span>
-              ))}
-            </div>
-            <span className="font-mono text-xs text-primary opacity-0 transition-opacity group-hover:opacity-100">
-              view →
+        <div className="relative flex h-full flex-col justify-between p-6">
+          <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-foreground/80">
+            <motion.span layoutId={`project-${project.id}-type`}>{project.type}</motion.span>
+            <span className="rounded-full border border-foreground/20 px-2 py-0.5">
+              {project.status}
             </span>
           </div>
+
+          <div>
+            <motion.h3
+              layoutId={`project-${project.id}-title`}
+              className="font-display text-2xl font-semibold text-foreground md:text-3xl"
+            >
+              {project.name}
+            </motion.h3>
+            <p className="mt-2 max-w-md text-sm text-foreground/80 line-clamp-2">
+              {project.blurb}
+            </p>
+            <div className="mt-4 flex items-center justify-between">
+              <div className="flex flex-wrap gap-2 font-mono text-[10px] uppercase tracking-widest text-foreground/70">
+                {project.stack.slice(0, 3).map((s) => (
+                  <span key={s} className="rounded-full border border-foreground/20 px-2 py-0.5">
+                    {s}
+                  </span>
+                ))}
+              </div>
+              <span className="font-mono text-xs text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                view →
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
-    </motion.a>
+      </Link>
+    </motion.div>
   );
 }

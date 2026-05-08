@@ -1,114 +1,91 @@
-## Pivot: From "Compiler OS" to a Premium Personal Portfolio
 
-Strip the heavy compiler metaphor. Keep the cinematic dark aesthetic, but make the story about **you** — who you are, what you've built, how to hire you. 3D and framer become storytelling tools, not the subject.
+# FAANG-Level Portfolio — Feature Plan
 
-New section arc:
+Goal: turn the current portfolio into a recruiter-grade, feature-rich showcase. Four explicit asks plus a small set of high-leverage additions that make the whole experience feel cohesive.
+
+---
+
+## Wave 1 — Core asks (highest priority)
+
+### 1. Project case studies with metrics
+Extend `src/lib/projects.ts` with rich case-study data per project:
+- `timeline` (e.g. "Mar – Aug 2025, 6 mo")
+- `role` ("Lead engineer · solo")
+- `stack` (already exists, expand into grouped: language / infra / frontend)
+- `impact[]` array of metric cards: `{ label, value, delta }` (e.g. "Latency", "38ms", "-62%")
+- `problem`, `approach`, `outcome` long-form blocks
+- `gallery[]` (image/video/3D placeholder)
+- `links` (live, repo, writeup)
+
+New component `ProjectCaseStudy.tsx` rendering an animated layout:
+- Sticky left rail with project meta + jump links
+- Right column: hero cover → problem → approach (with code/diagram blocks) → impact metrics grid (count-up numbers via framer `useInView` + `animate`) → gallery → next-project CTA
+- Section reveals via existing `fadeUp` / `stagger` from `src/lib/motion.ts`
+
+### 2. Lenis smooth scroll + scroll-linked tuning
+- Add `lenis` (`@studio-freight/lenis`) provider in `src/components/SmoothScroll.tsx`, mount once in `Index.tsx`
+- Sync with framer-motion via `ScrollTrigger`-style `requestAnimationFrame` loop; expose `useLenis` hook
+- Pause Lenis when modal open, when `prefers-reduced-motion`, and on touch devices (let native scroll win on mobile to avoid jank)
+- Audit `useScroll` consumers (`Process.tsx`, future case study) to use `layoutEffect: false` and throttle `useTransform` outputs
+- Add a thin top progress bar (`ScrollProgress.tsx`) driven by Lenis
+
+### 3. Work grid → case study layout transitions
+- Wrap each `WorkCard` cover, title, and meta in `motion.* layoutId={`project-${id}-cover`}` etc.
+- Clicking a card opens a full-screen overlay route `/work/:slug` (add to `App.tsx` routes) using `AnimatePresence mode="wait"` + shared layout
+- Overlay = `ProjectCaseStudy` mounted inside a `motion.div` with matching `layoutId`s so cover image, title, and tags morph from grid position into the case study hero
+- Back button reverses the transition; ESC + scroll-lock handled in overlay
+- Preserve scroll position on the Work page when returning
+
+### 4. Testimonials marquee
+- New `Testimonials.tsx` between `Experience` and `Playground`
+- Two rows scrolling opposite directions using framer `animate` with infinite linear `x` transform (or CSS `@keyframes marquee` already in tailwind config)
+- Each card: glass styling (`GlassCard`), avatar circle (initials fallback), quote, name, role, company logo mark
+- Pause-on-hover, reduce-motion fallback (static grid)
+- Seed with 6–8 quotes in `src/lib/testimonials.ts`
+
+---
+
+## Wave 2 — Recommended FAANG-polish additions
+
+5. **Command palette** (`⌘K`) — `cmdk` powered, jump to sections/projects, toggle theme, copy email, open resume.
+6. **Resume / CV section** — printable `/resume` route with semantic HTML, "Download PDF" via `react-to-print`, JSON-LD `Person` schema.
+7. **Now / Currently** widget in About — what I'm building, reading, listening to (static array, easy to update).
+8. **Writing / Notes** section — MDX-ready list (placeholder posts ok), reading-time, tag chips.
+9. **Awards & recognition strip** — logo wall (Stripe-style) with subtle marquee.
+10. **Contact upgrade** — form posts to Lovable Cloud edge function → email; show success animation; add Calendly/cal.com inline embed and copy-email button.
+11. **OG image generator** — per-project dynamic OG via static export at build; per-page `<title>` + meta + canonical via `react-helmet-async`.
+12. **Performance pass** — lazy-load 3D sections via `React.lazy`+`Suspense`, cap `dpr={[1,1.5]}`, `frameloop="demand"` gated by `IntersectionObserver`; Lighthouse target ≥95 perf / 100 a11y.
+13. **A11y + i18n basics** — focus-visible rings, skip-to-content, prefers-reduced-motion everywhere, alt text audit.
+14. **Analytics** — privacy-friendly Plausible/Umami snippet, custom events on project open + contact submit.
+
+---
+
+## Suggested build order
 
 ```text
-HERO  →  ABOUT  →  WORK  →  PROCESS  →  EXPERIENCE  →  PLAYGROUND  →  CONTACT
+Wave 1 (this round)
+  1. Lenis + ScrollProgress           (foundation; everything else benefits)
+  2. Case study data model + page     (no transitions yet, route works standalone)
+  3. Layout transitions Work → case study
+  4. Testimonials marquee
+
+Wave 2 (next round)
+  5. Command palette
+  6. Resume + Now widget
+  7. Writing + Awards strip
+  8. Contact upgrade (Cloud function)
+  9. SEO/OG + perf + a11y + analytics
 ```
 
 ---
 
-## Sections & What to Add
+## Technical notes
 
-### 1. Hero — "Signature Moment"
-- Big kinetic name: **SHUBH** as 3D extruded text (drei `Text3D`) with subtle metallic shader, slow rotation, mouse-parallax.
-- One-line role tagline with framer **split-text reveal** (each word fades+rises, staggered).
-- Two CTAs: `View Work` (magnetic hover) + `Get in touch`.
-- Floating availability pill: green dot + "Available for freelance — May 2026".
-- Scroll cue: animated chevron + "scroll" with framer loop.
+- **Routing**: switch Work card click from anchor to `<Link to={`/work/${slug}`}>`; keep `/` scroll position with a `useScrollRestoration` hook.
+- **Shared layout pitfall**: `layoutId` must be unique and present in only one mounted tree at a time — gate the grid card's `layoutId` to off while overlay is open to avoid flicker.
+- **Lenis + framer**: drive framer's `useScroll` from a custom `scrollY` motionValue updated in Lenis's `scroll` callback; do not let both libs control `body` scroll.
+- **Reduced motion**: every new animation reads `useReducedMotion()` and degrades to fade/none.
+- **Data**: keep all content in `src/lib/*.ts` so a future CMS swap is trivial.
+- **No new heavy deps** beyond `lenis`, `cmdk`, `react-helmet-async`, `react-to-print` (all small).
 
-### 2. About — "The Human Layer"
-- Two-column: left = portrait (rounded, subtle tilt on mouse using framer `useMotionValue`), right = warm bio paragraph.
-- Inline stat chips: years of experience, projects shipped, coffee consumed.
-- 3D ambient: a small floating object behind the portrait (torus knot or abstract shape) with bloom-like CSS halo.
-
-### 3. Selected Work — Showcase Grid
-- 3–6 hero projects in an asymmetric bento grid.
-- Each card:
-  - Cover image with **framer parallax** on scroll.
-  - Hover: image scales, title slides up, a "View case study →" link reveals.
-  - Tags (React, Three.js, etc.) and year.
-- One **featured project** spans 2 columns with a looping muted video preview.
-- Click → smooth `layoutId` transition (framer) into a detail view with role/stack/outcome.
-
-### 4. Process — "How I Work" (3D centerpiece)
-- A horizontal scroll panel with 4 stages: **Discover · Design · Build · Ship**.
-- Center: a **3D abstract object** that morphs shape per stage (sphere → icosahedron → wireframe cube → glowing torus), driven by `useScroll`.
-- Each stage has a one-line description and 2–3 bullets.
-
-### 5. Experience — Timeline
-- Clean vertical timeline of roles (company, period, what you did).
-- Framer `whileInView` slide-in from alternating sides.
-- Subtle vertical line drawn via `motion.path` with `pathLength` tied to scroll.
-
-### 6. Playground / Lab
-- 3D interactive toy: a **field of floating instanced meshes** (drei `Instances`) that react to cursor — push away or attract.
-- Below: small grid of "experiments" (codepens, side projects, shaders) as thumbnail cards.
-- Sets you apart as someone who plays, not just ships.
-
-### 7. Testimonials (optional but high-trust)
-- Marquee row of quotes from clients/colleagues.
-- Auto-scroll, pause on hover.
-
-### 8. Contact — "Let's Talk"
-- Big statement: "Have a project in mind?" with mailto CTA.
-- Simple form: name, email, message — framer focus animations on each field.
-- Below: socials (GitHub, LinkedIn, X, Read.cv) as icon buttons with magnetic hover.
-- Footer: location, timezone, "© 2026 Shubh".
-
----
-
-## 3D Ideas (lightweight, no assets)
-
-- **Hero**: extruded 3D name OR a single hero object (crystal / orb / torus knot) — pick one signature shape and own it.
-- **About**: ambient floating geometry behind portrait.
-- **Process**: morphing centerpiece tied to scroll.
-- **Playground**: cursor-reactive instanced field.
-- Skip post-processing (caused WebGL crashes earlier). Use additive sprite glows + CSS halos for the "bloom" feel.
-
-## Framer Motion Patterns to Use
-
-- **Split-text reveal** for headings (stagger children).
-- **Magnetic buttons** for CTAs.
-- **Scroll-linked parallax** on project covers.
-- **Layout transitions** (`layoutId`) for project card → detail.
-- **whileInView** with `once: true` for section entrances.
-- **useScroll + useTransform** for the process morph and timeline draw.
-- **Marquee** with infinite `x` animation for testimonials/tech logos.
-- **Page enter overlay** — a quick wipe/curtain on first load.
-
-## Global Polish
-
-- Custom cursor (already exists) — keep, refine sizes per element.
-- Smooth scroll via `lenis` (small dep, big quality jump).
-- Sticky minimal nav with active-section underline.
-- Theme toggle (already exists).
-- Reduced-motion fallbacks for every animation.
-- Lazy-load 3D sections with `React.lazy` + Suspense; cap DPR at 1.5; `frameloop="demand"` when off-screen.
-
----
-
-## What to Remove from Current Build
-
-To make room and stay focused:
-- BootIntro terminal (or shorten to ~1s splash).
-- AST Visualization playground.
-- Stats Dashboard (compiler metrics).
-- Skill Network (replace with simple categorized chips in About, or a small marquee).
-- Execution History styled as compiler logs (rework as clean Experience timeline).
-
----
-
-## Suggested First Wave
-
-1. Add `lenis` smooth scroll + motion variants lib (`src/lib/motion.ts`).
-2. Rebuild Hero with 3D signature object + split-text + CTAs.
-3. Rebuild Work as bento grid with parallax + hover.
-4. Add Process section with scroll-driven morphing 3D centerpiece.
-5. Clean up nav, footer, contact.
-
-Wave 2: Playground 3D field, testimonials marquee, project detail layout transitions.
-
-Tell me to proceed and I'll start with Wave 1.
+Ready to start with Wave 1 step 1 (Lenis + ScrollProgress) on approval, or reorder if you want testimonials first since it's the quickest visible win.
