@@ -70,8 +70,6 @@ function Marquee({
           ease: 'linear',
           repeat: Infinity,
         }}
-        style={{ animationPlayState: 'running' }}
-        whileHover={{ animationPlayState: 'paused' } as never}
       >
         {loop.map((t, i) => (
           <Card key={i} t={t} />
