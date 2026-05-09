@@ -1,91 +1,138 @@
+# Shubh Sharma — "Live System" Portfolio Rebuild
 
-# FAANG-Level Portfolio — Feature Plan
-
-Goal: turn the current portfolio into a recruiter-grade, feature-rich showcase. Four explicit asks plus a small set of high-leverage additions that make the whole experience feel cohesive.
-
----
-
-## Wave 1 — Core asks (highest priority)
-
-### 1. Project case studies with metrics
-Extend `src/lib/projects.ts` with rich case-study data per project:
-- `timeline` (e.g. "Mar – Aug 2025, 6 mo")
-- `role` ("Lead engineer · solo")
-- `stack` (already exists, expand into grouped: language / infra / frontend)
-- `impact[]` array of metric cards: `{ label, value, delta }` (e.g. "Latency", "38ms", "-62%")
-- `problem`, `approach`, `outcome` long-form blocks
-- `gallery[]` (image/video/3D placeholder)
-- `links` (live, repo, writeup)
-
-New component `ProjectCaseStudy.tsx` rendering an animated layout:
-- Sticky left rail with project meta + jump links
-- Right column: hero cover → problem → approach (with code/diagram blocks) → impact metrics grid (count-up numbers via framer `useInView` + `animate`) → gallery → next-project CTA
-- Section reveals via existing `fadeUp` / `stagger` from `src/lib/motion.ts`
-
-### 2. Lenis smooth scroll + scroll-linked tuning
-- Add `lenis` (`@studio-freight/lenis`) provider in `src/components/SmoothScroll.tsx`, mount once in `Index.tsx`
-- Sync with framer-motion via `ScrollTrigger`-style `requestAnimationFrame` loop; expose `useLenis` hook
-- Pause Lenis when modal open, when `prefers-reduced-motion`, and on touch devices (let native scroll win on mobile to avoid jank)
-- Audit `useScroll` consumers (`Process.tsx`, future case study) to use `layoutEffect: false` and throttle `useTransform` outputs
-- Add a thin top progress bar (`ScrollProgress.tsx`) driven by Lenis
-
-### 3. Work grid → case study layout transitions
-- Wrap each `WorkCard` cover, title, and meta in `motion.* layoutId={`project-${id}-cover`}` etc.
-- Clicking a card opens a full-screen overlay route `/work/:slug` (add to `App.tsx` routes) using `AnimatePresence mode="wait"` + shared layout
-- Overlay = `ProjectCaseStudy` mounted inside a `motion.div` with matching `layoutId`s so cover image, title, and tags morph from grid position into the case study hero
-- Back button reverses the transition; ESC + scroll-lock handled in overlay
-- Preserve scroll position on the Work page when returning
-
-### 4. Testimonials marquee
-- New `Testimonials.tsx` between `Experience` and `Playground`
-- Two rows scrolling opposite directions using framer `animate` with infinite linear `x` transform (or CSS `@keyframes marquee` already in tailwind config)
-- Each card: glass styling (`GlassCard`), avatar circle (initials fallback), quote, name, role, company logo mark
-- Pause-on-hover, reduce-motion fallback (static grid)
-- Seed with 6–8 quotes in `src/lib/testimonials.ts`
+A full content + UX overhaul grounded in your actual resume (Copious Infotech, AcuStock, Python Compiler, HR Workflow Designer, Self-Pruning NN, Multi-Model RAG API) with a "live production system" visual language: dashboards, log streams, uptime panels, animated metrics. Plus a working contact form that emails you and auto-replies to the visitor.
 
 ---
 
-## Wave 2 — Recommended FAANG-polish additions
+## 1. Content rewrite (real data from your resume)
 
-5. **Command palette** (`⌘K`) — `cmdk` powered, jump to sections/projects, toggle theme, copy email, open resume.
-6. **Resume / CV section** — printable `/resume` route with semantic HTML, "Download PDF" via `react-to-print`, JSON-LD `Person` schema.
-7. **Now / Currently** widget in About — what I'm building, reading, listening to (static array, easy to update).
-8. **Writing / Notes** section — MDX-ready list (placeholder posts ok), reading-time, tag chips.
-9. **Awards & recognition strip** — logo wall (Stripe-style) with subtle marquee.
-10. **Contact upgrade** — form posts to Lovable Cloud edge function → email; show success animation; add Calendly/cal.com inline embed and copy-email button.
-11. **OG image generator** — per-project dynamic OG via static export at build; per-page `<title>` + meta + canonical via `react-helmet-async`.
-12. **Performance pass** — lazy-load 3D sections via `React.lazy`+`Suspense`, cap `dpr={[1,1.5]}`, `frameloop="demand"` gated by `IntersectionObserver`; Lighthouse target ≥95 perf / 100 a11y.
-13. **A11y + i18n basics** — focus-visible rings, skip-to-content, prefers-reduced-motion everywhere, alt text audit.
-14. **Analytics** — privacy-friendly Plausible/Umami snippet, custom events on project open + contact submit.
+**Identity**
+
+- Shubh Sharma — Full-Stack & AI Engineer
+- B.Tech CS (Data Science), SRM IST Ghaziabad · CGPA 7.8 · Class of 2027
+- Delhi NCR · [ss1188@srmist.edu.in](mailto:ss1188@srmist.edu.in) · +91-9897204232
+- LinkedIn: shubh-sharma · GitHub: shubhsharma2006
+
+**Headline metrics (used everywhere — hero, stats grid, project cards): internshio sextioj**
+
+- 87% data-error reduction (15% → <2%)
+- 25% faster retrieval (Mongoose indexing)
+- 18% lower API latency
+- 30+ REST endpoints shipped
+- 4-tier RBAC architected
+- 0.91 test accuracy / sparsity (Self-Pruning NN)
+- 3× throughput (RAG fusion across 3 LLMs)
+- Sub-100ms query response (Finance Tracker)
 
 ---
 
-## Suggested build order
+## 2. Page sections (single-page + project detail routes) 
 
-```text
-Wave 1 (this round)
-  1. Lenis + ScrollProgress           (foundation; everything else benefits)
-  2. Case study data model + page     (no transitions yet, route works standalone)
-  3. Layout transitions Work → case study
-  4. Testimonials marquee
-
-Wave 2 (next round)
-  5. Command palette
-  6. Resume + Now widget
-  7. Writing + Awards strip
-  8. Contact upgrade (Cloud function)
-  9. SEO/OG + perf + a11y + analytics
+```
+┌─ Nav (sticky, glass) ───────────────────────────────┐
+│  shubh.dev    Home  About  Work  Skills  Contact   │
+├─ HERO ──────────────────────────────────────────────┤
+│  Name + tagline + SplitText                         │
+│  ┌──── LIVE METRICS PANEL ────┐                     │
+│  │ ● uptime  ● errors -87%    │                     │
+│  │ ● latency -18%  ● 30+ APIs │  ← animated counters│
+│  └────────────────────────────┘                     │
+│  Quick nav chips → about/work/contact               │
+├─ SCROLLING LOG STREAM ──────────────────────────────┤
+│  [12:04:21] INFO  shipped endpoint /api/stock/in    │
+│  [12:04:22] OK    rbac check passed (MANAGER)       │
+│  [12:04:23] INFO  invalid records 14.8% → 1.7%      │
+│  ...real accomplishments as fake syslog             │
+├─ STATS GRID (huge, front-loaded) ───────────────────┤
+│   87%        25%        3×        0.91              │
+│   errors↓    faster     throughput accuracy         │
+├─ ABOUT ─────────────────────────────────────────────┤
+│  Bio · Values · Education timeline · Internship     │
+├─ SKILLS (animated fill bars) ───────────────────────┤
+│  Languages · Backend · DevOps · AI/ML · Security    │
+│  Domain cards · Tools                                │
+├─ WORK (5 real projects, bento grid) ────────────────┤
+│  AcuStock · Python Compiler · HR Workflow ·         │
+│  Self-Pruning NN · Multi-Model RAG API              │
+│  Each card: per-metric mini-dashboard + tech badges │
+│  Click → /work/:slug case study                     │
+├─ EXPERIENCE (cards w/ green left-border hover) ─────┤
+│  Copious Infotech · Dec 2025 → Present              │
+├─ TESTIMONIALS (existing marquee, kept)              │
+├─ CONTACT — "UPTIME" PANEL ──────────────────────────┤
+│  ● Available for internships    status: OPERATIONAL │
+│  ● Response time            avg: < 24h              │
+│  ● Timezone                 IST (UTC+5:30)          │
+│  [ Contact form ] → emails you + auto-reply visitor │
+├─ FOOTER ────────────────────────────────────────────┤
+│  © 2026 · live UTC clock 18:42:07 UTC · socials     │
+└─────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Technical notes
+## 3. New / rewritten components
 
-- **Routing**: switch Work card click from anchor to `<Link to={`/work/${slug}`}>`; keep `/` scroll position with a `useScrollRestoration` hook.
-- **Shared layout pitfall**: `layoutId` must be unique and present in only one mounted tree at a time — gate the grid card's `layoutId` to off while overlay is open to avoid flicker.
-- **Lenis + framer**: drive framer's `useScroll` from a custom `scrollY` motionValue updated in Lenis's `scroll` callback; do not let both libs control `body` scroll.
-- **Reduced motion**: every new animation reads `useReducedMotion()` and degrades to fade/none.
-- **Data**: keep all content in `src/lib/*.ts` so a future CMS swap is trivial.
-- **No new heavy deps** beyond `lenis`, `cmdk`, `react-helmet-async`, `react-to-print` (all small).
 
-Ready to start with Wave 1 step 1 (Lenis + ScrollProgress) on approval, or reorder if you want testimonials first since it's the quickest visible win.
+| Component                                                                                  | Purpose                                                    |
+| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| `LiveMetricsPanel.tsx`                                                                     | Hero dashboard: animated counters, sparklines, status dots |
+| `LogStream.tsx`                                                                            | Auto-scrolling syslog (uses your real wins as messages)    |
+| `StatsGrid.tsx`                                                                            | 4 giant impact numbers with count-up                       |
+| `SkillBars.tsx`                                                                            | Animated horizontal fill bars per skill, grouped           |
+| `DomainCards.tsx`                                                                          | "Backend / DevOps / AI / Security" capability cards        |
+| `EducationTimeline.tsx`                                                                    | SRM IST · DMPS XII · DMPS X                                |
+| `UptimePanel.tsx`                                                                          | Contact section styled as service-health page              |
+| `LiveClock.tsx`                                                                            | Footer ticking UTC clock                                   |
+| `ProjectMiniDashboard.tsx`                                                                 | Per-project KPI strip on Work cards                        |
+| Rewrite `Hero.tsx`, `About.tsx`, `Work.tsx`, `Experience.tsx`, `Contact.tsx`, `Footer.tsx` | Plug in real content                                       |
+| `lib/projects.ts`                                                                          | Replace fake data with 5 real projects + GitHub links      |
+| `lib/skills.ts` (new)                                                                      | Skill groups with proficiency 0–100                        |
+
+
+Existing `SmoothScroll`, `ScrollProgress`, `Testimonials`, `Process`, `Playground`, `ProjectCaseStudy`, `Nav`, `MagneticButton`, `SplitText` are kept and re-skinned where needed.
+
+---
+
+## 4. Contact form + email backend (Lovable Cloud)
+
+Flow:
+
+1. Visitor fills `name / email / message` on the site.
+2. Client calls `send-transactional-email` edge function **twice** with one trigger:
+  - Email **to you** (`ss1188@srmist.edu.in`) — template: `contact-notification` — contains visitor name, email, message.
+  - Email **to visitor** — template: `contact-confirmation` — "Hey {name}, thanks — I'll get back to you. Here's what you sent: …"
+3. Submission also stored in `contact_submissions` table (with RLS) for backup.
+
+Steps the build will perform:
+
+- Enable **Lovable Cloud** (one click via tool).
+- Run email-domain setup dialog so emails come from your branded sender.
+- Scaffold transactional email infra + two React-Email templates (`contact-notification`, `contact-confirmation`).
+- Create `contact_submissions` table + RLS (anon insert allowed, select restricted).
+- Wire form with Zod validation, rate-limit on client, success/error toasts.
+
+You'll be prompted once to set up the email sender domain — everything else is automatic.
+
+---
+
+## 5. Getting the code into VS Code
+
+This is a one-time export, not something I build:
+
+1. Top-right of editor → **GitHub → Connect to GitHub** → push repo.
+2. In VS Code: `git clone <your-repo>` → `bun install` → `bun dev`.
+
+I'll add a short README section with these exact steps.
+
+---
+
+## Build order
+
+1. Content layer: `lib/projects.ts` (5 real projects), `lib/skills.ts`, copy rewrite.
+2. New components: LiveMetricsPanel, LogStream, StatsGrid, SkillBars, DomainCards, UptimePanel, LiveClock, EducationTimeline, ProjectMiniDashboard.
+3. Rewire `Hero / About / Work / Experience / Contact / Footer / Index`.
+4. Enable Cloud → email domain dialog → scaffold templates → wire form.
+5. README export instructions.
+
+Approve and I'll start with step 1 and stop at step 4 to walk you through the email-domain setup.
