@@ -3,12 +3,13 @@ import { useLocation } from 'react-router-dom';
 import { CursorFollower } from '@/components/ui/CursorFollower';
 import Nav from '@/components/Nav';
 import Hero from '@/components/Hero';
+import LogStream from '@/components/LogStream';
+import StatsGrid from '@/components/StatsGrid';
 import About from '@/components/About';
+import Skills from '@/components/Skills';
 import Work from '@/components/Work';
-import Process from '@/components/Process';
 import Experience from '@/components/Experience';
 import Testimonials from '@/components/Testimonials';
-import Playground from '@/components/Playground';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 
@@ -16,16 +17,15 @@ const Index = () => {
   const { hash } = useLocation();
 
   useEffect(() => {
-    document.title = 'Shubh — Creative Engineer & Designer';
+    document.title = 'Shubh Sharma — Full-Stack & AI Engineer';
     const meta = document.querySelector('meta[name="description"]');
     if (meta)
       meta.setAttribute(
         'content',
-        'Shubh — creative engineer crafting cinematic interfaces, 3D experiences and developer tools.'
+        'Shubh Sharma — pre-final year CS (Data Science) student & full-stack engineer. Production systems, RBAC, Docker, AI/ML, RAG.'
       );
   }, []);
 
-  // Scroll to hash on mount/back-navigation (e.g. /#work)
   useEffect(() => {
     if (!hash) return;
     const id = hash.slice(1);
@@ -41,12 +41,13 @@ const Index = () => {
       <Nav />
       <main>
         <Hero />
+        <LogStream />
+        <StatsGrid />
         <About />
         <Work />
-        <Process />
+        <Skills />
         <Experience />
         <Testimonials />
-        <Playground />
         <Contact />
       </main>
       <Footer />

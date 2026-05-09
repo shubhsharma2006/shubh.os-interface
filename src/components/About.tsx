@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
 import { fadeUp, stagger } from '@/lib/motion';
+import { PROFILE } from '@/lib/profile';
 
-const SKILLS = [
-  { group: 'Frontend', items: ['React', 'TypeScript', 'Next.js', 'Vite', 'Tailwind'] },
-  { group: '3D & Motion', items: ['Three.js', 'R3F', 'GLSL', 'Framer Motion', 'GSAP'] },
-  { group: 'Backend', items: ['Node', 'Postgres', 'tRPC', 'Edge Functions', 'Redis'] },
-  { group: 'Design', items: ['Figma', 'Design Systems', 'Motion Design', 'Branding'] },
+const VALUES = [
+  { k: 'Ship to production', v: 'Real users beat polished demos.' },
+  { k: 'Measure everything', v: '-87%, +25%, p95 — numbers or it didn\'t happen.' },
+  { k: 'Secure by default', v: 'JWT in cookies, validated input, hardened headers.' },
+  { k: 'Learn in public', v: 'OSS on GitHub, IBM-certified, always shipping.' },
 ];
 
 export default function About() {
@@ -28,26 +29,18 @@ export default function About() {
             variants={fadeUp}
             className="font-display text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl"
           >
-            A designer who codes,<br />
-            an engineer who <span className="text-gradient">cares about craft</span>.
+            CS student.<br />
+            <span className="text-gradient">Production engineer</span>.<br />
+            Builder of real things.
           </motion.h2>
 
-          <motion.div
-            variants={fadeUp}
-            className="relative mt-10 aspect-[4/5] max-w-sm overflow-hidden rounded-2xl glass holo-border"
-          >
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'radial-gradient(circle at 30% 20%, hsl(var(--primary) / 0.4), transparent 60%), radial-gradient(circle at 70% 80%, hsl(var(--accent) / 0.4), transparent 60%)',
-              }}
-            />
-            <div className="absolute inset-0 flex items-end p-6 font-mono text-xs text-foreground/80">
-              <div>
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">portrait</div>
-                <div className="mt-1 text-base">Shubh, Bengaluru · IST</div>
-              </div>
+          <motion.div variants={fadeUp} className="mt-8 space-y-2 font-mono text-xs text-muted-foreground">
+            <div><span className="text-primary">→</span> {PROFILE.location}</div>
+            <div><span className="text-primary">→</span> {PROFILE.email}</div>
+            <div><span className="text-primary">→</span> {PROFILE.phone}</div>
+            <div className="flex gap-3 pt-2">
+              <a href={PROFILE.github} target="_blank" rel="noreferrer" className="hover:text-primary">github ↗</a>
+              <a href={PROFILE.linkedin} target="_blank" rel="noreferrer" className="hover:text-primary">linkedin ↗</a>
             </div>
           </motion.div>
         </motion.div>
@@ -55,36 +48,63 @@ export default function About() {
         <motion.div
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: true, amount: 0.2 }}
           variants={stagger(0.08)}
         >
           <motion.p variants={fadeUp} className="text-lg leading-relaxed text-muted-foreground md:text-xl">
-            For the last five years I've been designing and building{' '}
-            <span className="text-foreground">interfaces, products and experiments</span> at the
-            intersection of design, engineering and motion. I've shipped tools used by hundreds of
-            thousands of developers, crafted brand sites that pushed agency rosters, and lost weekends
-            to shaders and physics demos.
+            I&apos;m a pre-final year CS (Data Science) student at SRM IST Ghaziabad, currently a{' '}
+            <span className="text-foreground">full-time AI &amp; full-stack engineering intern</span> at
+            Copious Infotech. In 3+ months I&apos;ve shipped 30+ REST endpoints, architected a
+            4-tier RBAC system, and deployed cloud-compatible distributed infrastructure with
+            Docker, Nginx and PM2 cluster mode.
           </motion.p>
 
           <motion.p variants={fadeUp} className="mt-6 text-lg leading-relaxed text-muted-foreground md:text-xl">
-            I care about <span className="text-foreground">tight typography</span>,{' '}
-            <span className="text-foreground">considered motion</span>, and the small details most
-            users never notice — until you take them away.
+            Outside work I build <span className="text-foreground">real systems</span> — a Python
+            compiler with SSA optimizations, a multi-model RAG API fusing 3 local LLMs, a
+            self-pruning neural network on CIFAR-10. IBM-certified in ML, RAG and Agentic AI.
           </motion.p>
 
-          <motion.div variants={fadeUp} className="mt-12 grid grid-cols-2 gap-x-10 gap-y-8">
-            {SKILLS.map((s) => (
-              <div key={s.group}>
-                <div className="mb-3 font-mono text-[11px] uppercase tracking-widest text-primary">
-                  {s.group}
-                </div>
-                <ul className="space-y-1.5 text-sm text-foreground/85">
-                  {s.items.map((i) => (
-                    <li key={i}>{i}</li>
-                  ))}
-                </ul>
+          {/* Values grid */}
+          <motion.div variants={fadeUp} className="mt-10 grid gap-3 sm:grid-cols-2">
+            {VALUES.map((val) => (
+              <div
+                key={val.k}
+                className="rounded-xl border border-border bg-surface/40 p-4 transition-colors hover:border-primary/50"
+              >
+                <div className="font-mono text-[11px] uppercase tracking-widest text-primary">{val.k}</div>
+                <div className="mt-1 text-sm text-foreground/80">{val.v}</div>
               </div>
             ))}
+          </motion.div>
+
+          {/* Education */}
+          <motion.div variants={fadeUp} className="mt-12">
+            <div className="mb-4 font-mono text-[11px] uppercase tracking-widest text-primary">education</div>
+            <div className="space-y-3">
+              {PROFILE.education.map((e) => (
+                <div key={e.school + e.year} className="flex items-baseline justify-between gap-4 border-b border-border/60 pb-3">
+                  <div>
+                    <div className="text-sm text-foreground">{e.school}</div>
+                    <div className="text-xs text-muted-foreground">{e.degree} · {e.detail}</div>
+                  </div>
+                  <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">{e.year}</div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Certifications */}
+          <motion.div variants={fadeUp} className="mt-10">
+            <div className="mb-4 font-mono text-[11px] uppercase tracking-widest text-primary">certifications</div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {PROFILE.certifications.map((c) => (
+                <div key={c.name} className="flex items-center justify-between rounded-lg border border-border bg-surface/40 px-3 py-2">
+                  <span className="text-sm text-foreground/85">{c.name}</span>
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{c.year}</span>
+                </div>
+              ))}
+            </div>
           </motion.div>
         </motion.div>
       </div>

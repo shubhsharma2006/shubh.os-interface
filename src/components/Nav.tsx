@@ -29,9 +29,8 @@ export default function Nav() {
         <nav className="hidden items-center gap-8 md:flex">
           {link('about', 'about')}
           {link('work', 'work')}
-          {link('process', 'process')}
+          {link('skills', 'skills')}
           {link('experience', 'experience')}
-          {link('playground', 'playground')}
           {link('contact', 'contact')}
         </nav>
         <div className="flex items-center gap-4">
