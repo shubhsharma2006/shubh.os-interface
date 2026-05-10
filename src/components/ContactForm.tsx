@@ -34,9 +34,10 @@ export default function ContactForm() {
 
     try {
       const id = crypto.randomUUID();
+      const { name, email, message } = parsed.data;
       const { error: insertError } = await supabase
         .from('contact_submissions')
-        .insert({ id, ...parsed.data });
+        .insert({ id, name, email, message });
       if (insertError) throw insertError;
 
       // Notify owner + auto-reply visitor. These run in parallel and are
