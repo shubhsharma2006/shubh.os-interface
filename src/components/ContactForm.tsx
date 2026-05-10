@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import MagneticButton from './MagneticButton';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Required').max(80),
@@ -32,39 +33,43 @@ export default function ContactForm() {
     setLoading(true);
 
     try {
-      // Try Lovable Cloud edge function if available; otherwise mailto fallback.
-      // @ts-expect-error - supabase client is created when Cloud is enabled
-      const supabase = (await import('@/integrations/supabase/client').catch(() => null))?.supabase;
-      if (supabase) {
-        const id = crypto.randomUUID();
-        await supabase.from('contact_submissions').insert({ ...parsed.data, id });
-        await supabase.functions.invoke('send-transactional-email', {
+      const id = crypto.randomUUID();
+      const { error: insertError } = await supabase
+        .from('contact_submissions')
+        .insert({ id, ...parsed.data });
+      if (insertError) throw insertError;
+
+      // Notify owner + auto-reply visitor. These run in parallel and are
+      // non-blocking for the success state (submission is already stored).
+      const submittedAt = new Date().toISOString();
+      await Promise.allSettled([
+        supabase.functions.invoke('send-transactional-email', {
           body: {
             templateName: 'contact-notification',
-            recipientEmail: 'ss1188@srmist.edu.in',
+            recipientEmail: 'shubh4880@gmail.com',
             idempotencyKey: `notify-${id}`,
-            templateData: parsed.data,
+            templateData: { ...parsed.data, submittedAt },
           },
-        });
-        await supabase.functions.invoke('send-transactional-email', {
+        }),
+        supabase.functions.invoke('send-transactional-email', {
           body: {
             templateName: 'contact-confirmation',
             recipientEmail: parsed.data.email,
             idempotencyKey: `confirm-${id}`,
             templateData: parsed.data,
           },
-        });
-      } else {
-        // Graceful fallback before Cloud + email setup is wired
-        const subject = encodeURIComponent(`Portfolio inquiry from ${parsed.data.name}`);
-        const body = encodeURIComponent(`${parsed.data.message}\n\n— ${parsed.data.name} <${parsed.data.email}>`);
-        window.location.href = `mailto:ss1188@srmist.edu.in?subject=${subject}&body=${body}`;
-      }
+        }),
+      ]);
+
       setSent(true);
       setForm({ name: '', email: '', message: '' });
-      toast({ title: 'Message sent', description: 'I\'ll get back to you within 24h.' });
+      toast({ title: 'Message sent', description: "I'll get back to you within 24h." });
     } catch (err) {
-      toast({ title: 'Something went wrong', description: 'Please email me directly.', variant: 'destructive' });
+      toast({
+        title: 'Something went wrong',
+        description: 'Please email me directly at shubh4880@gmail.com',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
