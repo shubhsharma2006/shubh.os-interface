@@ -1,43 +1,74 @@
-## Goal
+# Portfolio v3 — Full Build Plan
 
-Replace the current `mailto:` fallback in the contact form with a real email backend so:
+A staged rebuild of the portfolio against the v3 spec. The current site already has Hero, Work, Skills, Experience, Testimonials, Contact (with Lovable Cloud + `contact_submissions`), Smooth Scroll, and a Project Case Study route. We will refactor toward the v3 design system and add the missing high-value sections (Playground, AI Chat, Tech Ecosystem graph, GitHub Activity, Command Palette).
 
-1. You receive every submission at `shubh4880@gmail.com`
-2. The visitor receives an auto-reply addressed to the email they entered ("Hey &nbsp;… thanks for reaching out")
+I'll ship this in **5 phases**, each independently reviewable. You approve → I build that phase → we move on. optimize all the phases according to to make them more better
 
-## Approach
+---
 
-Use **Lovable Cloud** (built-in, no external account, no SMTP/Nodemailer setup needed). Nodemailer would require us to host an SMTP credential and an always-on server — Lovable Cloud's email pipeline is the right primitive here (durable queue, retries, suppression, unsubscribe, DKIM/SPF on your own domain). I'll mention this once and move on.
+## Phase 1 — Design System + Navigation Refresh
 
-## Steps
+Foundation everything else depends on.
 
-1. **Enable Lovable Cloud** — provisions database + edge functions.
-2. **Email sender domain setup** — you'll get a one-click dialog to pick a domain (e.g. `notify.yourdomain.com`). Required so emails come from your brand instead of a generic sender and actually land in inboxes. If you don't own a domain yet, we can use a Lovable-provided sender for now and swap later.
-3. **Database**
-  - `contact_submissions` table: `id uuid pk`, `name text`, `email text`, `message text`, `created_at timestamptz default now()`
-  - RLS: anonymous `INSERT` allowed, no `SELECT` for anon (only service role reads it)
-4. **Email templates** (React Email, in `supabase/functions/_shared/transactional-email-templates/`)
-  - `contact-notification.tsx` — sent to **you** (`ss1188@srmist.edu.in`). Shows name, email, message, timestamp, with a "Reply to &nbsp;" button that opens mailto.
-  - `contact-confirmation.tsx` — sent to **the visitor**. Greeting uses the email they entered: *"Hey {email}, thanks for reaching out — I'll get back to you within 24 hours."* Includes the message they sent so they have a copy. Branded with portfolio styling (dark theme accent on white body, mono accents to match SHUBH.OS aesthetic).
-  - Both registered in `registry.ts`.
-5. **Edge function wiring** — uses the platform's `send-transactional-email` function (already created by infra setup). No custom function needed.
-6. **Frontend (`src/components/ContactForm.tsx`)**
-  - Remove the `mailto:` fallback branch and the dynamic `@/integrations/supabase/client` import hack.
-  - Use the real generated Supabase client.
-  - On submit (after Zod validation):
-  a. Insert row into `contact_submissions` with a generated `id`
-  b. Invoke `send-transactional-email` twice (notification → you, confirmation → visitor) with idempotency keys derived from the row id
-  - Toast on success, error toast on failure with email fallback link.
-7. **Deploy edge functions** and verify by sending a test submission.
+- Rewrite `index.css` + `tailwind.config.ts` to v3 tokens (bg-base `#060608`, accent-1 `#4F6EF7`, accent-2 `#8B5CF6`, accent-3 `#06B6D4`, glass tokens, glow tokens) — all as HSL semantic vars.
+- Typography: Inter for headings/body, JetBrains Mono for code/metrics. Drop Space Grotesk.
+- Refactor `Nav.tsx`: scroll-hide on down / reveal on up, scroll-spy active link, SS logo circle, mobile hamburger drawer.
+- Add `ScrollProgress` polish (already exists), `CursorGlow` (CSS radial follow), and a `CommandPalette` (Cmd+K) shell.
+- Hero polish: keep current LiveMetricsPanel, add status pill + role rotator (Systems / AI Infra / Compiler / Workflow / Backend) + animated terminal panel.
 
-## What you'll see in the UI
+## Phase 2 — Projects 2.0 (Showcase + Modal + Diagrams)
 
-- Cloud enable button (one click)
-- Email domain setup dialog (one click + DNS info if you have a domain)
-- After that: form works end-to-end. You get the notification email; the visitor gets the auto-reply addressed to them.
+The flagship section.
 
-## Out of scope
+- Restructure `src/lib/projects.ts` to the 4 v3 projects: Python Compiler, HR Workflow Designer, Multi-Model RAG API, AcuStock AI — each with `category`, `status`, `stack`, `metrics[]`, `architecture_layers[]`, `diagram_type`.
+- New `ProjectCard` with 3D CSS tilt, mini-diagram, glow-on-hover.
+- Filter pills with Framer Motion layout transitions.
+- `ProjectModal` (full-screen, backdrop blur, ESC/click-out close) replacing/augmenting the existing `/work/:slug` route.
+- 4 SVG diagram components (`CompilerDiagram` linear pipeline, `WorkflowDiagram` DAG, `RAGDiagram` branching pipeline, `AnalyticsDiagram` dashboard mock) — animated with Framer Motion.
 
-- Nodemailer / external SMTP (not needed; Lovable Cloud handles delivery, retries, suppression, DKIM)
-- Captcha / spam protection (can add later if you want)
-- Admin dashboard to view submissions (data lives in Cloud → Database; can build a UI later)
+## Phase 3 — Interactive Playground
+
+Three tabs in one section.
+
+- `PythonREPL` powered by Pyodide (lazy-loaded), CodeMirror 6 editor, output console, run/clear/reset, example chips.
+- `CompilerVisualizer` — 6-step animated walk-through of lexer → parser → semantic → AST opt → codegen → runtime, with prev/next/auto-play.
+- `RAGDemo` — simulated 5-stage pipeline animation (embed → search → context → route → stream) using mock responses.
+- All three tabs lazy-loaded behind Suspense.
+
+## Phase 4 — AI Chat + Tech Ecosystem + GitHub
+
+The "wow" section trio.
+
+- **AI Chat** (`ChatWidget`): floating button bottom-right, slide-up panel, streaming responses. Backend: Supabase Edge Function `chat-proxy` calling Lovable AI Gateway (default `google/gemini-3-flash-preview` — equivalent quality, no extra API key). System prompt tuned to represent Shubh. New table `portfolio_chats` (session_id, messages jsonb) + 20-msg/session rate limit.
+- **Tech Ecosystem**: force-directed graph (D3-force in React) with center "Shubh" node + 4 orbital rings (languages / frameworks / infra / domains). Hover dims others, click → tooltip with "used in" projects.
+- **GitHub Activity**: live fetch from `api.github.com/users/{username}` + jogruber contributions API. Stats row, contribution heatmap, top 3 repos. Skeleton loading + mock fallback.
+
+## Phase 5 — About + Experience + Polish + QA
+
+Final pass.
+
+- **About**: 2-column rebuild — story left, "Operating Principles" macOS-style toggle panel right, reading list horizontal scroll below.
+- **Experience**: vertical timeline with milestone dots, scroll-reveal cards.
+- **Contact**: extend existing form with Role select + live visitor counter via Supabase Realtime (new `portfolio_visits` table). Keep current Lovable Cloud email pipeline.
+- **Polish**: Konami easter egg, button hover glows, section entrance animations, `prefers-reduced-motion` audit, mobile QA at 428px (current viewport), Lighthouse pass.
+
+---
+
+## Technical Notes (skip if not interested)
+
+- **AI**: Lovable AI Gateway via Edge Function — no Claude key needed. If you specifically want Claude, I'll wire `add_secret` for `ANTHROPIC_API_KEY` instead.
+- **DB additions**: `portfolio_chats`, `portfolio_visits` (RLS: anon insert only). Keep existing `contact_submissions`.
+- **Lazy boundaries**: Pyodide, Three.js, D3-force, AI Chat all behind `React.lazy` + `Suspense`.
+- **Performance budget**: ≤60 canvas particles, R3F `pixelRatio ≤ 1.5`, code-split per section.
+- **Accessibility**: keyboard nav, ESC closes modals/chat, contrast ≥4.5:1, reduced-motion path.
+
+---
+
+## Open Questions Before I Start
+
+1. **AI provider for chat** — Lovable AI Gateway (free, no key, Gemini/GPT-5) or Claude specifically (you'd add `ANTHROPIC_API_KEY`)?
+2. **GitHub username** — spec says `shubhsharma2006`. Confirm? (Also need this for the GitHub section to fetch real data.)
+3. **Phase order** — start at Phase 1 (design system reset) or jump straight to Phase 2 (Projects 2.0) since most visual impact lives there?
+4. **Scope confirm** — all 5 phases, or trim (e.g. skip Playground or GitHub section)?
+
+Approve this plan and answer the 4 questions above and I'll start executing phase by phase.
