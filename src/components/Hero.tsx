@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import MagneticButton from './MagneticButton';
 import SplitText from './SplitText';
 import LiveMetricsPanel from './LiveMetricsPanel';
+import RoleRotator from './RoleRotator';
+import HeroTerminal from './HeroTerminal';
 import { fadeUp, stagger } from '@/lib/motion';
 
 const CompilerCore = lazy(() => import('./CompilerCore'));
@@ -38,9 +40,16 @@ export default function Hero() {
             <SplitText text="production systems." className="block text-gradient text-glow" delay={0.06} />
           </h1>
 
+          <motion.div
+            variants={fadeUp}
+            className="mt-6 font-display text-2xl font-medium text-muted-foreground md:text-3xl"
+          >
+            <RoleRotator />
+          </motion.div>
+
           <motion.p
             variants={fadeUp}
-            className="mt-7 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg"
+            className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg"
           >
             Pre-final year CS (Data Science) at SRM IST. Full-stack engineer at{' '}
             <span className="text-foreground">Copious Infotech</span> shipping real
@@ -80,6 +89,9 @@ export default function Hero() {
           </div>
           <div className="mt-4">
             <LiveMetricsPanel />
+          </div>
+          <div className="mt-4">
+            <HeroTerminal />
           </div>
         </motion.div>
       </div>

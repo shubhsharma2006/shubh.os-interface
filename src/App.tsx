@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import SmoothScroll from "@/components/SmoothScroll";
 import ScrollProgress from "@/components/ScrollProgress";
+import CommandPalette from "@/components/CommandPalette";
 import Index from "./pages/Index.tsx";
 import ProjectCaseStudy from "./pages/ProjectCaseStudy.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -20,6 +21,7 @@ const App = () => (
       <BrowserRouter>
         <SmoothScroll />
         <ScrollProgress />
+        <CommandPalette />
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/" element={<Index />} />
