@@ -1,9 +1,12 @@
 export type ImpactMetric = { label: string; value: string; delta?: string };
+export type ProjectCategory = 'All' | 'Systems' | 'AI' | 'Full-Stack' | 'DevTool';
+export type DiagramType = 'compiler' | 'workflow' | 'rag' | 'analytics';
 
 export type Project = {
   id: string;
   name: string;
   type: string;
+  category: Exclude<ProjectCategory, 'All'>;
   status: 'LIVE' | 'ACTIVE' | 'BETA' | 'ARCHIVED';
   blurb: string;
   stack: string[];
@@ -11,6 +14,7 @@ export type Project = {
   live?: string;
   size: 'lg' | 'md' | 'sm';
   metric?: { label: string; value: string };
+  diagram: DiagramType;
 
   // Case study
   timeline: string;
@@ -20,63 +24,100 @@ export type Project = {
   approach: string[];
   outcome: string;
   impact: ImpactMetric[];
+  architecture: string[];
 };
 
 const COVERS = {
-  acustock: 'linear-gradient(135deg,#0ea5e9 0%,#6366f1 60%,#0f172a 100%)',
-  compiler: 'linear-gradient(135deg,#10b981 0%,#0891b2 100%)',
-  hr: 'linear-gradient(135deg,#a78bfa 0%,#ec4899 100%)',
-  pruning: 'linear-gradient(135deg,#f59e0b 0%,#ef4444 100%)',
-  rag: 'linear-gradient(135deg,#22d3ee 0%,#6366f1 50%,#a855f7 100%)',
+  acustock: 'linear-gradient(135deg,#4F6EF7 0%,#8B5CF6 60%,#0a0a14 100%)',
+  compiler: 'linear-gradient(135deg,#06B6D4 0%,#4F6EF7 100%)',
+  hr: 'linear-gradient(135deg,#8B5CF6 0%,#ec4899 100%)',
+  rag: 'linear-gradient(135deg,#06B6D4 0%,#4F6EF7 50%,#8B5CF6 100%)',
 } as const;
+
+export const PROJECT_CATEGORIES: ProjectCategory[] = ['All', 'Systems', 'AI', 'Full-Stack', 'DevTool'];
 
 export const PROJECTS: Project[] = [
   {
-    id: 'acustock',
-    name: 'AcuStock v2',
-    type: 'PRODUCTION · FULL-STACK',
-    status: 'LIVE',
+    id: 'python-compiler',
+    name: 'Python Compiler',
+    type: 'COMPILER · SYSTEMS',
+    category: 'Systems',
+    status: 'ACTIVE',
     blurb:
-      'Distributed inventory platform serving real users — RBAC, real-time WebSockets, SAP-style immutable ledger, hardened against 6 attack classes.',
-    stack: ['Next.js 14', 'TypeScript', 'MongoDB', 'Socket.IO', 'Docker', 'Nginx', 'PM2'],
-    github: 'https://github.com/shubhsharma2006/acustock_2.0',
+      'Python-to-C compiler with a custom register VM. Lexer → Parser → AST → SSA optimizer → C codegen.',
+    stack: ['Python', 'C', 'SSA IR', 'Pratt Parser'],
+    github: 'https://github.com/shubhsharma2006/PythonCompiler',
     size: 'lg',
-    metric: { label: 'DATA ERRORS', value: '-87%' },
-    timeline: 'Dec 2025 — Present',
-    role: 'Full-Stack SWE Intern · Copious Infotech',
-    cover: COVERS.acustock,
+    metric: { label: 'PASSES', value: 'CFG+SSA' },
+    diagram: 'compiler',
+    timeline: '2025',
+    role: 'Solo · Compilers',
+    cover: COVERS.compiler,
+    architecture: ['Lexer', 'Parser (Pratt)', 'AST', 'SSA IR', 'Optimizer', 'C Codegen / VM'],
     problem:
-      'Inventory data was drifting (~15% invalid records), auth was vulnerable to XSS token theft, and the stack had no horizontal scalability story.',
+      'Wanted a hands-on study of compiler internals — not a toy, but a real lex/parse/typecheck/optimize/codegen pipeline for a Python subset.',
     approach: [
-      'Architected a 4-tier RBAC engine (SUPER_ADMIN / ADMIN / MANAGER / USER) with JWT in HTTP-only cookies — eliminated XSS-based token theft.',
-      'Overhauled MongoDB schema validation + server-side edge-case tests, dropping invalid records from ~15% to under 2%.',
-      'Refactored 30+ Mongoose queries with strategic indexing to cut p95 latency by 18% and improve retrieval speed by 25%.',
-      'Containerised on Linux with Docker + Nginx HTTPS reverse proxy + PM2 cluster mode for zero-downtime restarts.',
-      'Designed an SAP-style immutable ledger with serial-number tracking for full audit traceability.',
+      'Built lexer, Pratt-style parser, CST→AST lowering, semantic analyzer and type checker.',
+      'Added control-flow analyzer + SSA-based optimizer (dead-code elimination, constant folding).',
+      'Two backends: a register VM for fast iteration and a C codegen with py_runtime.{h,c}.',
+      'Comprehensive test suite covering compilation, VM execution, runtime helpers and compile-time rejections.',
     ],
     outcome:
-      'Live production platform with real users, hardened against 6 attack classes (XSS, CSRF, NoSQL injection, brute-force, CSP/HSTS bypass, rate-abuse).',
+      'Handles core Python — closures, default + keyword args, classes, exceptions, f-strings, for/while, imports — with structured diagnostics.',
     impact: [
-      { label: 'Data errors', value: '<2%', delta: '-87%' },
-      { label: 'API latency', value: '-18%' },
-      { label: 'Retrieval', value: '+25%' },
-      { label: 'Endpoints', value: '30+' },
+      { label: 'Backends', value: '2' },
+      { label: 'Optimizations', value: 'CFG+SSA' },
+      { label: 'Test coverage', value: 'Full' },
+    ],
+  },
+  {
+    id: 'hr-workflow',
+    name: 'HR Workflow Designer',
+    type: 'PRODUCT · DEVTOOL',
+    category: 'DevTool',
+    status: 'ACTIVE',
+    blurb:
+      'Drag-and-drop workflow canvas for HR processes — 5 custom node types, dynamic config forms, simulation sandbox.',
+    stack: ['React', 'TypeScript', 'React Flow', 'tRPC', 'MySQL', 'Drizzle'],
+    github: 'https://github.com/shubhsharma2006/hr-workflow-designer',
+    size: 'md',
+    metric: { label: 'NODE TYPES', value: '5' },
+    diagram: 'workflow',
+    timeline: '2025',
+    role: 'Solo · Full-Stack',
+    cover: COVERS.hr,
+    architecture: ['React Flow Canvas', 'Node Registry', 'Zod Schema', 'tRPC API', 'Drizzle ORM', 'MySQL'],
+    problem: "HR teams couldn't prototype approval flows without engineering — every change was a ticket.",
+    approach: [
+      'Built a React Flow canvas with 5 custom node types (Start, Task, Approval, Automated, End).',
+      'Dynamic config forms per node, validated with Zod.',
+      'Simulation sandbox to dry-run flows before publishing.',
+      'JWT in HTTP-only cookies + token versioning for revocation.',
+    ],
+    outcome: 'Enables non-engineers to design and validate workflows safely before deployment.',
+    impact: [
+      { label: 'Node types', value: '5' },
+      { label: 'Auth', value: 'JWT+rotate' },
+      { label: 'Sim', value: 'Sandbox' },
     ],
   },
   {
     id: 'rag-api',
     name: 'Multi-Model RAG API',
     type: 'AI · INFRA',
+    category: 'AI',
     status: 'ACTIVE',
     blurb:
-      'Production RAG system fusing 3 local LLMs (Llama3.2, Mistral, Gemma2) via Ollama with Qdrant vector search and Redis caching. 100% local, zero API cost.',
-    stack: ['FastAPI', 'Ollama', 'Qdrant', 'Redis', 'Docker', 'Python'],
+      'Production RAG fusing 3 local LLMs via Ollama with Qdrant vector search + Redis caching. 100% local, zero API cost.',
+    stack: ['FastAPI', 'Ollama', 'Qdrant', 'Redis', 'Docker'],
     github: 'https://github.com/shubhsharma2006/-multi-model-rag-api',
     size: 'md',
     metric: { label: 'THROUGHPUT', value: '3×' },
+    diagram: 'rag',
     timeline: '2025',
     role: 'Solo · Backend & ML',
     cover: COVERS.rag,
+    architecture: ['Query', 'Embed (Nomic)', 'Qdrant Search', 'Context Builder', '3-Model Fusion', 'Redis Cache'],
     problem:
       'Single-model RAG hallucinates and external LLM APIs leak data + cost money at scale. Needed a private, multi-model fusion approach.',
     approach: [
@@ -94,90 +135,38 @@ export const PROJECTS: Project[] = [
     ],
   },
   {
-    id: 'python-compiler',
-    name: 'Python Compiler',
-    type: 'COMPILER · SYSTEMS',
-    status: 'ACTIVE',
+    id: 'acustock',
+    name: 'AcuStock v2',
+    type: 'PRODUCTION · FULL-STACK',
+    category: 'Full-Stack',
+    status: 'LIVE',
     blurb:
-      'A Python-to-C compiler with a custom VM execution path. Lexer → Parser → AST → SSA optimizer → C codegen, with full unit + integration test coverage.',
-    stack: ['Python', 'C', 'SSA IR', 'unittest'],
-    github: 'https://github.com/shubhsharma2006/PythonCompiler',
-    size: 'md',
-    metric: { label: 'PASSES', value: 'CFG+SSA' },
-    timeline: '2025',
-    role: 'Solo',
-    cover: COVERS.compiler,
+      'Distributed inventory platform — 4-tier RBAC, real-time WebSockets, SAP-style immutable ledger, hardened against 6 attack classes.',
+    stack: ['Next.js 14', 'TypeScript', 'MongoDB', 'Socket.IO', 'Docker', 'Nginx'],
+    github: 'https://github.com/shubhsharma2006/acustock_2.0',
+    size: 'lg',
+    metric: { label: 'DATA ERRORS', value: '-87%' },
+    diagram: 'analytics',
+    timeline: 'Dec 2025 — Present',
+    role: 'Full-Stack SWE Intern · Copious Infotech',
+    cover: COVERS.acustock,
+    architecture: ['Next.js 14', 'RBAC Engine', 'Socket.IO', 'MongoDB Ledger', 'Nginx + PM2', 'Docker'],
     problem:
-      'Wanted a hands-on study of compiler internals — not a toy, but a real lex/parse/typecheck/optimize/codegen pipeline for a Python subset.',
+      'Inventory data was drifting (~15% invalid records), auth was vulnerable to XSS token theft, and the stack had no horizontal scalability story.',
     approach: [
-      'Built lexer, Pratt-style parser, CST→AST lowering, semantic analyzer, type checker.',
-      'Added control-flow analyzer + SSA-based optimizer (dead-code, constant fold).',
-      'Two backends: a register VM for fast iteration and a C codegen with py_runtime.{h,c}.',
-      'Comprehensive test suite covering compilation, VM execution, runtime helpers and compile-time rejections.',
+      'Architected a 4-tier RBAC engine (SUPER_ADMIN / ADMIN / MANAGER / USER) with JWT in HTTP-only cookies — eliminated XSS-based token theft.',
+      'Overhauled MongoDB schema validation + server-side edge-case tests, dropping invalid records from ~15% to under 2%.',
+      'Refactored 30+ Mongoose queries with strategic indexing to cut p95 latency by 18% and improve retrieval speed by 25%.',
+      'Containerised on Linux with Docker + Nginx HTTPS reverse proxy + PM2 cluster mode for zero-downtime restarts.',
+      'Designed an SAP-style immutable ledger with serial-number tracking for full audit traceability.',
     ],
     outcome:
-      'Handles core Python: closures, default + keyword args, classes, exceptions, f-strings, for/while, imports — with structured diagnostics.',
+      'Live production platform with real users, hardened against 6 attack classes (XSS, CSRF, NoSQL injection, brute-force, CSP/HSTS bypass, rate-abuse).',
     impact: [
-      { label: 'Backends', value: '2' },
-      { label: 'Optimizations', value: 'CFG+SSA' },
-      { label: 'Test coverage', value: 'Full' },
-    ],
-  },
-  {
-    id: 'self-pruning',
-    name: 'Self-Pruning Neural Net',
-    type: 'AI · RESEARCH',
-    status: 'ACTIVE',
-    blurb:
-      'A feed-forward net with learnable sigmoid gates on every weight, driven by an L1 penalty — achieves high sparsity end-to-end without straight-through estimators.',
-    stack: ['PyTorch', 'NumPy', 'CIFAR-10'],
-    github: 'https://github.com/shubhsharma2006/self-pruning',
-    size: 'sm',
-    metric: { label: 'ACCURACY', value: '0.91' },
-    timeline: '2025 · Tredence case study',
-    role: 'Solo · Research',
-    cover: COVERS.pruning,
-    problem:
-      'Standard pruning relies on heuristics or non-differentiable masks. Wanted a fully end-to-end differentiable approach.',
-    approach: [
-      'Designed PrunableLinear layers — every weight has its own learnable sigmoid gate.',
-      'Drove gates with an L1 penalty on a separate, 8× higher learning rate so sparsity signal dominates.',
-      'Validated on synthetic data + CIFAR-10.',
-    ],
-    outcome:
-      'High sparsity at 0.91 test accuracy on CIFAR-10 — fully differentiable, no straight-through estimator needed.',
-    impact: [
-      { label: 'Accuracy', value: '0.91' },
-      { label: 'Differentiable', value: '100%' },
-      { label: 'Gate LR', value: '8×' },
-    ],
-  },
-  {
-    id: 'hr-workflow',
-    name: 'HR Workflow Designer',
-    type: 'PRODUCT · DEVTOOL',
-    status: 'ACTIVE',
-    blurb:
-      'Drag-and-drop workflow canvas for HR processes — custom node types, dynamic config forms, simulation sandbox, secure JWT auth.',
-    stack: ['React', 'TypeScript', 'React Flow', 'tRPC', 'MySQL', 'Drizzle'],
-    github: 'https://github.com/shubhsharma2006/hr-workflow-designer',
-    size: 'sm',
-    timeline: '2025',
-    role: 'Solo · Full-Stack',
-    cover: COVERS.hr,
-    problem:
-      'HR teams couldn\'t prototype approval flows without engineering — every change was a ticket.',
-    approach: [
-      'Built a React Flow canvas with 5 custom node types (Start, Task, Approval, Automated, End).',
-      'Dynamic config forms per node, validated with Zod.',
-      'Simulation sandbox to dry-run flows before publishing.',
-      'JWT in HTTP-only cookies + token versioning for revocation.',
-    ],
-    outcome: 'Enables non-engineers to design and validate workflows safely before deployment.',
-    impact: [
-      { label: 'Node types', value: '5' },
-      { label: 'Auth', value: 'JWT+rotate' },
-      { label: 'Sim', value: 'Sandbox' },
+      { label: 'Data errors', value: '<2%', delta: '-87%' },
+      { label: 'API latency', value: '-18%' },
+      { label: 'Retrieval', value: '+25%' },
+      { label: 'Endpoints', value: '30+' },
     ],
   },
 ];
